@@ -45,3 +45,11 @@ def test_ix_header_removed():
     html = b"<html><body><ix:header>HIDDEN_XBRL</ix:header><p>visible</p></body></html>"
     text = html_to_text(html)
     assert "HIDDEN_XBRL" not in text and "visible" in text
+
+
+def test_heading_split_across_inline_tags():
+    html = (b"<html><body><p>Item 1A. Risk Factors 5</p><p>Item 1B. Unresolved Staff Comments 9</p>"
+            b"<h2>ITEM 1A. RIS<span>K</span> FACTORS</h2><p>" + BODY.encode() +
+            b"</p><h2>ITEM 1B. UNRESOLVED STAFF COMMENTS</h2></body></html>")
+    section = extract_risk_section(html_to_text(html), min_chars=3000)
+    assert "competition and regulatory uncertainty" in section

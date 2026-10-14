@@ -7,9 +7,17 @@ end marker after it; spans shorter than `min_chars` (the TOC) are dropped, and
 the longest remaining span wins.
 """
 import re
+import warnings
 from typing import List
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
+
+# Many EDGAR files are XHTML; parsing them with lxml's HTML parser is fine here.
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
+
+_BLOCK_TAGS = ["p", "div", "br", "tr", "td", "th", "li", "h1", "h2", "h3", "h4",
+               "h5", "h6", "table"]
+_INVISIBLE = re.compile("[\u200b\u200c\u200d\ufeff\u00ad]")
 
 # Separators allowed between "Item 1A" and "Risk Factors". Commas and quotes are
 # deliberately excluded so prose like: see Item 1A, "Risk Factors" is not matched.
@@ -27,11 +35,19 @@ class SectionNotFoundError(Exception):
 
 
 def html_to_text(html: bytes) -> str:
-    """Strip markup and hidden inline-XBRL header; collapse whitespace."""
+    """Strip markup and hidden inline-XBRL header; collapse whitespace.
+
+    Whitespace is added only after block-level tags. Joining text with a space
+    at every tag boundary splits words that filers style across several inline
+    tags (e.g. "RIS" + "K" -> "RIS K"), which breaks heading detection.
+    """
     soup = BeautifulSoup(html, "lxml")
     for tag in soup(["script", "style", "ix:header"]):
         tag.decompose()
-    text = soup.get_text(separator=" ").replace("\xa0", " ")
+    for tag in soup.find_all(_BLOCK_TAGS):
+        tag.insert_after(" ")
+    text = _INVISIBLE.sub("", soup.get_text(separator=""))
+    text = text.replace("\xa0", " ")
     return re.sub(r"\s+", " ", text).strip()
 
 

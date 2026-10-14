@@ -1,0 +1,42 @@
+[
+  {
+    "workers": 1,
+    "filings_total": 290,
+    "filings_ok": 290,
+    "filings_failed": 0,
+    "success_rate": 1.0,
+    "elapsed_seconds": 225.62,
+    "filings_per_minute": 77.1,
+    "speedup_vs_1_worker": 1.0
+  },
+  {
+    "workers": 2,
+    "filings_total": 290,
+    "filings_ok": 290,
+    "filings_failed": 0,
+    "success_rate": 1.0,
+    "elapsed_seconds": 122.94,
+    "filings_per_minute": 141.5,
+    "speedup_vs_1_worker": 1.84
+  },
+  {
+    "workers": 4,
+    "filings_total": 290,
+    "filings_ok": 290,
+    "filings_failed": 0,
+    "success_rate": 1.0,
+    "elapsed_seconds": 75.53,
+    "filings_per_minute": 230.4,
+    "speedup_vs_1_worker": 2.99
+  },
+  {
+    "workers": 8,
+    "filings_total": 290,
+    "filings_ok": 290,
+    "filings_failed": 0,
+    "success_rate": 1.0,
+    "elapsed_seconds": 48.25,
+    "filings_per_minute": 360.6,
+    "speedup_vs_1_worker": 4.68
+  }
+]

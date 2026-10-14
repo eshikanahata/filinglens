@@ -1,0 +1,9 @@
+{
+  "workers": 4,
+  "filings_total": 290,
+  "filings_ok": 290,
+  "filings_failed": 0,
+  "success_rate": 1.0,
+  "elapsed_seconds": 69.15,
+  "filings_per_minute": 251.6
+}

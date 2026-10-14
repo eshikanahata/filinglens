@@ -1,0 +1,60 @@
+schema: '2.0'
+stages:
+  download:
+    cmd: python -m src.ingestion.download_filings
+    deps:
+    - path: config/tickers.txt
+      hash: md5
+      md5: 2a4d744f490293f9612defeb1ec7be56
+      size: 490
+    - path: src/ingestion
+      hash: md5
+      md5: 83c3e276ff0e6a46cac37c57eb35001a.dir
+      size: 27843
+      nfiles: 6
+    params:
+      params.yaml:
+        data:
+          tickers_file: config/tickers.txt
+          form_type: 10-K
+          start_date: '2021-01-01'
+          end_date:
+        edgar.min_interval_seconds: 0.2
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: 19863291b5918958b2e8b5f597f3e104.dir
+      size: 1151076162
+      nfiles: 291
+    - path: reports/download_metrics.json
+      hash: md5
+      md5: fe1d3e9e60d948614984cf7c495cc374
+      size: 114
+  parse:
+    cmd: python -m src.parsing.parse_filings
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 19863291b5918958b2e8b5f597f3e104.dir
+      size: 1151076162
+      nfiles: 291
+    - path: src/parsing
+      hash: md5
+      md5: d0582be51afb0fb44643f4408001f4e1.dir
+      size: 23804
+      nfiles: 7
+    params:
+      params.yaml:
+        parsing:
+          num_workers: 4
+          min_section_chars: 3000
+    outs:
+    - path: data/parsed
+      hash: md5
+      md5: 79eb320774a0f24706d2806a6c609482.dir
+      size: 18524075
+      nfiles: 290
+    - path: reports/parse_metrics.json
+      hash: md5
+      md5: 41f7d32a98b4bd9e1e82eb354b454ab8
+      size: 168

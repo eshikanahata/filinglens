@@ -16,11 +16,12 @@ OUT = Path("reports/ray_benchmark.json")
 TMP = Path("tmp_benchmark")
 
 
-def main(worker_counts=(1, 2, 4)) -> None:
+def main(worker_counts=(1, 2, 4, 8)) -> None:
     setup_logging("benchmark")
     min_chars = load_params()["parsing"]["min_section_chars"]
     runs = []
     for w in worker_counts:
+        logger.info("Starting run with %d worker(s)...", w)
         metrics = run_parsing(MANIFEST, TMP, w, min_chars)
         metrics.pop("failures")
         runs.append(metrics)

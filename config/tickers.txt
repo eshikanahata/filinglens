@@ -7,7 +7,7 @@ META
 NVDA
 ORCL
 CSCO
-INTC
+# INTC - - excluded: annual-report-style 10-K, no Item 1A heading (cross-reference index only)
 IBM
 QCOM
 TXN
@@ -36,7 +36,7 @@ COST
 HD
 LOW
 TGT
-MCD
+# MCD - excluded: same layout
 SBUX
 NKE
 DIS
@@ -49,8 +49,8 @@ CVX
 CAT
 DE
 BA
-HON
-GE
+# HON - excluded: same layout
+# GE - excluded: same layout
 MMM
 UPS
 FDX
