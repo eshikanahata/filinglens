@@ -1,0 +1,17 @@
+# Tracked by DVC: changing any listed value re-runs the dependent stage.
+# The EDGAR User-Agent is NOT here; it comes from the EDGAR_USER_AGENT env var.
+edgar:
+  min_interval_seconds: 0.2   # 5 requests/sec, half of SEC's 10/sec limit
+  timeout_seconds: 30
+
+data:
+  tickers_file: config/tickers.txt
+  form_type: "10-K"
+  # 3 fiscal years of modelling data + 1 prior year as the baseline for
+  # year-over-year features, so the window starts one year earlier.
+  start_date: "2021-01-01"
+  end_date: null
+
+parsing:
+  num_workers: 4
+  min_section_chars: 3000     # shorter "Item 1A" spans are treated as TOC hits
