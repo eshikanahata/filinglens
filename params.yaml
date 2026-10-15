@@ -15,3 +15,42 @@ data:
 parsing:
   num_workers: 4
   min_section_chars: 3000     # shorter "Item 1A" spans are treated as TOC hits
+
+prices:
+  benchmark: "SPY"
+  start_date: "2020-12-01"
+  end_date: "2026-10-14"      # fixed (not "today") so the stage is reproducible
+  max_retries: 3
+
+labels:
+  horizon_trading_days: 30    # abnormal return window after the filing date
+
+split:
+  test_start_date: "2025-07-01"   # filings on/after this date form the test set
+  embargo_days: 45                # train labels must end before the test period
+
+features:
+  lm_dictionary_path: data/external/LM_MasterDictionary.csv
+  min_prior_gap_days: 300         # prior filing must be ~1 year earlier
+  max_prior_gap_days: 450
+  tfidf:
+    max_features: 5000
+    min_df: 3
+    ngram_range: [1, 2]
+
+train:
+  random_state: 42
+  cv_splits: 3
+  logreg:
+    C: 0.5
+  xgboost:
+    n_estimators: 150
+    max_depth: 2
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "filinglens"
+  registered_model_name: "filinglens-risk"

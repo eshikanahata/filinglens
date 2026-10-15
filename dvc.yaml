@@ -2,7 +2,8 @@ stages:
   download:
     cmd: python -m src.ingestion.download_filings
     deps:
-      - src/ingestion
+      - src/ingestion/download_filings.py
+      - src/ingestion/edgar_client.py
       - config/tickers.txt
     params:
       - data
@@ -25,4 +26,63 @@ stages:
     metrics:
       - reports/parse_metrics.json:
           cache: false
-    # reports/parse_failures.csv is written too; it is small and goes in Git.
+
+  prices:
+    cmd: python -m src.ingestion.download_prices
+    deps:
+      - src/ingestion/download_prices.py
+      - config/tickers.txt
+    params:
+      - prices
+    outs:
+      - data/prices
+    metrics:
+      - reports/prices_metrics.json:
+          cache: false
+
+  labels:
+    cmd: python -m src.labels.make_labels
+    deps:
+      - src/labels
+      - src/common
+      - data/parsed
+      - data/prices
+    params:
+      - labels
+    outs:
+      - data/labels
+    metrics:
+      - reports/labels_metrics.json:
+          cache: false
+
+  features:
+    cmd: python -m src.features.build_features
+    deps:
+      - src/features
+      - src/common
+      - data/parsed
+      - data/external/LM_MasterDictionary.csv
+    params:
+      - features
+      - split
+    outs:
+      - data/features
+    metrics:
+      - reports/features_metrics.json:
+          cache: false
+
+  train:
+    cmd: python -m src.training.train
+    deps:
+      - src/training
+      - src/features/columns.py
+      - data/features
+      - data/labels
+    params:
+      - train
+      - split
+      - labels
+      - mlflow
+    metrics:
+      - reports/train_metrics.json:
+          cache: false

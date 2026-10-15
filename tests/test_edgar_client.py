@@ -28,7 +28,8 @@ def test_url_building():
     assert f.url == "https://www.sec.gov/Archives/edgar/data/320193/000122000001/a.htm"
 
 
-def test_user_agent_rejects_missing_and_placeholder(monkeypatch):
+def test_user_agent_rejects_missing_and_placeholder(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)                      # empty folder: no .env present
     monkeypatch.delenv("EDGAR_USER_AGENT", raising=False)
     with pytest.raises(MissingUserAgentError):
         get_user_agent()
@@ -37,3 +38,10 @@ def test_user_agent_rejects_missing_and_placeholder(monkeypatch):
         get_user_agent()
     monkeypatch.setenv("EDGAR_USER_AGENT", "Eshika Nahata eshika@iitm.ac.in")
     assert "@" in get_user_agent()
+
+
+def test_user_agent_read_from_dotenv_file(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("EDGAR_USER_AGENT", raising=False)
+    (tmp_path / ".env").write_text('EDGAR_USER_AGENT="Test User test.user@university.edu"\n')
+    assert get_user_agent() == "Test User test.user@university.edu"

@@ -7,11 +7,14 @@ stages:
       hash: md5
       md5: 2a4d744f490293f9612defeb1ec7be56
       size: 490
-    - path: src/ingestion
+    - path: src/ingestion/download_filings.py
       hash: md5
-      md5: 83c3e276ff0e6a46cac37c57eb35001a.dir
-      size: 27843
-      nfiles: 6
+      md5: 4ff05c1d8b045f544ac64148e85e88e9
+      size: 4255
+    - path: src/ingestion/edgar_client.py
+      hash: md5
+      md5: 1ba66ce08f4006422d3114ae6475d528
+      size: 5526
     params:
       params.yaml:
         data:
@@ -23,26 +26,26 @@ stages:
     outs:
     - path: data/raw
       hash: md5
-      md5: 19863291b5918958b2e8b5f597f3e104.dir
-      size: 1151076162
+      md5: 8d023e30e9cc214a32a6a04bee139c61.dir
+      size: 1151078482
       nfiles: 291
     - path: reports/download_metrics.json
       hash: md5
-      md5: fe1d3e9e60d948614984cf7c495cc374
-      size: 114
+      md5: 43bb575b1e23f1ef5beb588dcb89cd6e
+      size: 115
   parse:
     cmd: python -m src.parsing.parse_filings
     deps:
     - path: data/raw
       hash: md5
-      md5: 19863291b5918958b2e8b5f597f3e104.dir
-      size: 1151076162
+      md5: 8d023e30e9cc214a32a6a04bee139c61.dir
+      size: 1151078482
       nfiles: 291
     - path: src/parsing
       hash: md5
-      md5: d0582be51afb0fb44643f4408001f4e1.dir
-      size: 23804
-      nfiles: 7
+      md5: 0522a4bd3cc7f59091f6fac1c27f9c0e.dir
+      size: 26373
+      nfiles: 8
     params:
       params.yaml:
         parsing:
@@ -56,5 +59,166 @@ stages:
       nfiles: 290
     - path: reports/parse_metrics.json
       hash: md5
-      md5: 41f7d32a98b4bd9e1e82eb354b454ab8
+      md5: d6eeea5907521a46eaacce0f496bc031
       size: 168
+  prices:
+    cmd: python -m src.ingestion.download_prices
+    deps:
+    - path: config/tickers.txt
+      hash: md5
+      md5: 2a4d744f490293f9612defeb1ec7be56
+      size: 490
+    - path: src/ingestion/download_prices.py
+      hash: md5
+      md5: 4b0c658fe31fd8d203bd5088f56be0cc
+      size: 3704
+    params:
+      params.yaml:
+        prices:
+          benchmark: SPY
+          start_date: '2020-12-01'
+          end_date: '2026-10-14'
+          max_retries: 3
+    outs:
+    - path: data/prices
+      hash: md5
+      md5: 7e7e864db209f24f5ff560e617ae37cc.dir
+      size: 1516137
+      nfiles: 1
+    - path: reports/prices_metrics.json
+      hash: md5
+      md5: 38382408a101da6d1785e031ebb28dc3
+      size: 179
+  labels:
+    cmd: python -m src.labels.make_labels
+    deps:
+    - path: data/parsed
+      hash: md5
+      md5: 79eb320774a0f24706d2806a6c609482.dir
+      size: 18524075
+      nfiles: 290
+    - path: data/prices
+      hash: md5
+      md5: 7e7e864db209f24f5ff560e617ae37cc.dir
+      size: 1516137
+      nfiles: 1
+    - path: src/common
+      hash: md5
+      md5: 5aff329ff9c1e3effe43877f8cded6fc.dir
+      size: 5894
+      nfiles: 6
+    - path: src/labels
+      hash: md5
+      md5: 819b30ab4b963fff53f724c1e10d302f.dir
+      size: 11125
+      nfiles: 4
+    params:
+      params.yaml:
+        labels:
+          horizon_trading_days: 30
+    outs:
+    - path: data/labels
+      hash: md5
+      md5: e9fb06b87b12f26ce62068af5719bc75.dir
+      size: 40968
+      nfiles: 1
+    - path: reports/labels_metrics.json
+      hash: md5
+      md5: 731a605f54463994c2aea0aefbe7accb
+      size: 135
+  features:
+    cmd: python -m src.features.build_features
+    deps:
+    - path: data/external/LM_MasterDictionary.csv
+      hash: md5
+      md5: 12dade0123e1d096c1d1192c755f08a3
+      size: 9093460
+    - path: data/parsed
+      hash: md5
+      md5: 79eb320774a0f24706d2806a6c609482.dir
+      size: 18524075
+      nfiles: 290
+    - path: src/common
+      hash: md5
+      md5: 5aff329ff9c1e3effe43877f8cded6fc.dir
+      size: 5894
+      nfiles: 6
+    - path: src/features
+      hash: md5
+      md5: 3b4061202251059f632994c41f8d90e3.dir
+      size: 23575
+      nfiles: 8
+    params:
+      params.yaml:
+        features:
+          lm_dictionary_path: data/external/LM_MasterDictionary.csv
+          min_prior_gap_days: 300
+          max_prior_gap_days: 450
+          tfidf:
+            max_features: 5000
+            min_df: 3
+            ngram_range:
+            - 1
+            - 2
+        split:
+          test_start_date: '2025-07-01'
+          embargo_days: 45
+    outs:
+    - path: data/features
+      hash: md5
+      md5: 6c13a038fb015c1e20fe7805a80d6f2e.dir
+      size: 299891
+      nfiles: 2
+    - path: reports/features_metrics.json
+      hash: md5
+      md5: 3e171263ab5e7dca2f41fb4bda8351b3
+      size: 121
+  train:
+    cmd: python -m src.training.train
+    deps:
+    - path: data/features
+      hash: md5
+      md5: 6c13a038fb015c1e20fe7805a80d6f2e.dir
+      size: 299891
+      nfiles: 2
+    - path: data/labels
+      hash: md5
+      md5: e9fb06b87b12f26ce62068af5719bc75.dir
+      size: 40968
+      nfiles: 1
+    - path: src/features/columns.py
+      hash: md5
+      md5: fa5a9e3ae0d13389422b869e7f0e63be
+      size: 502
+    - path: src/training
+      hash: md5
+      md5: 905a7a58eb8fb731019704a5eb79d06a.dir
+      size: 35577
+      nfiles: 6
+    params:
+      params.yaml:
+        labels:
+          horizon_trading_days: 30
+        mlflow:
+          tracking_uri: sqlite:///mlflow.db
+          experiment_name: filinglens
+          registered_model_name: filinglens-risk
+        split:
+          test_start_date: '2025-07-01'
+          embargo_days: 45
+        train:
+          random_state: 42
+          cv_splits: 3
+          logreg:
+            C: 0.5
+          xgboost:
+            n_estimators: 150
+            max_depth: 2
+            learning_rate: 0.05
+            subsample: 0.8
+            colsample_bytree: 0.8
+    outs:
+    - path: reports/train_metrics.json
+      hash: md5
+      md5: 97835bbc2a101a8e16efeec59baf96ec
+      size: 208

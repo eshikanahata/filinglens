@@ -11,7 +11,7 @@ import threading
 import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional
-
+from pathlib import Path
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -31,8 +31,22 @@ class MissingUserAgentError(EdgarError):
     """EDGAR_USER_AGENT is not set to a real contact."""
 
 
+def _load_dotenv(path: str = ".env") -> None:
+    """Minimal .env reader; real environment variables take precedence."""
+    p = Path(path)
+    if not p.exists():
+        return
+    for line in p.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
 def get_user_agent() -> str:
-    """Read the User-Agent from the environment and reject placeholders."""
+    """Read the User-Agent from the environment (or .env) and reject placeholders."""
+    _load_dotenv()
     ua = os.environ.get("EDGAR_USER_AGENT", "").strip().strip('"')
     if not ua or "@" not in ua or "example.com" in ua or "your.real.email" in ua:
         raise MissingUserAgentError(
@@ -40,7 +54,6 @@ def get_user_agent() -> str:
             "real contact). See .env.example."
         )
     return ua
-
 
 class RateLimiter:
     """Thread-safe minimum spacing between requests."""
