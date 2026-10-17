@@ -192,9 +192,9 @@ stages:
       size: 502
     - path: src/training
       hash: md5
-      md5: 905a7a58eb8fb731019704a5eb79d06a.dir
-      size: 35577
-      nfiles: 6
+      md5: 92fc6649c6f977ee5b062459e0b7e431.dir
+      size: 53579
+      nfiles: 9
     params:
       params.yaml:
         labels:
@@ -218,7 +218,91 @@ stages:
             subsample: 0.8
             colsample_bytree: 0.8
     outs:
+    - path: reports/model_comparison.csv
+      hash: md5
+      md5: 563272b094afc902166915501b0c931b
+      size: 692
     - path: reports/train_metrics.json
       hash: md5
       md5: 97835bbc2a101a8e16efeec59baf96ec
       size: 208
+    - path: reports/train_run.json
+      hash: md5
+      md5: 1c44c53e0d5dc54dbf5dbdd3e7520133
+      size: 419
+  serving_data:
+    cmd: python -m src.serving.build_serving_data
+    deps:
+    - path: data/features
+      hash: md5
+      md5: 6c13a038fb015c1e20fe7805a80d6f2e.dir
+      size: 299891
+      nfiles: 2
+    - path: data/parsed
+      hash: md5
+      md5: 79eb320774a0f24706d2806a6c609482.dir
+      size: 18524075
+      nfiles: 290
+    - path: src/common
+      hash: md5
+      md5: 5aff329ff9c1e3effe43877f8cded6fc.dir
+      size: 5894
+      nfiles: 6
+    - path: src/features
+      hash: md5
+      md5: 3b4061202251059f632994c41f8d90e3.dir
+      size: 23575
+      nfiles: 8
+    - path: src/serving/build_serving_data.py
+      hash: md5
+      md5: 75f5707809036d49df4e1c01e5615b5f
+      size: 3742
+    params:
+      params.yaml:
+        features:
+          lm_dictionary_path: data/external/LM_MasterDictionary.csv
+          min_prior_gap_days: 300
+          max_prior_gap_days: 450
+          tfidf:
+            max_features: 5000
+            min_df: 3
+            ngram_range:
+            - 1
+            - 2
+    outs:
+    - path: data/serving
+      hash: md5
+      md5: f3ae7b3f253ad5d833829c50cbc75eac.dir
+      size: 314207
+      nfiles: 1
+  export_model:
+    cmd: python -m src.serving.export_model
+    deps:
+    - path: reports/train_metrics.json
+      hash: md5
+      md5: 97835bbc2a101a8e16efeec59baf96ec
+      size: 208
+    - path: reports/train_run.json
+      hash: md5
+      md5: 1c44c53e0d5dc54dbf5dbdd3e7520133
+      size: 419
+    - path: src/serving/export_model.py
+      hash: md5
+      md5: 9448dc8fc43420f48ff252cd1b1515be
+      size: 2733
+    params:
+      params.yaml:
+        mlflow:
+          tracking_uri: sqlite:///mlflow.db
+          experiment_name: filinglens
+          registered_model_name: filinglens-risk
+    outs:
+    - path: models/champion
+      hash: md5
+      md5: 2767a1a09409475a1ced991492695674.dir
+      size: 150636
+      nfiles: 8
+    - path: models/champion_info.json
+      hash: md5
+      md5: 292a56d92ac80035c954eb452a906e39
+      size: 273

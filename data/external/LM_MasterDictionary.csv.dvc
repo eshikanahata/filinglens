@@ -1,0 +1,5 @@
+outs:
+- md5: 12dade0123e1d096c1d1192c755f08a3
+  size: 9093460
+  hash: md5
+  path: LM_MasterDictionary.csv

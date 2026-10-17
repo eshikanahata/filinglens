@@ -1,0 +1,13 @@
+# Model server: serves the exported champion model with `mlflow models serve`.
+# MLflow writes the exact library versions used in training into the model folder;
+# installing those pins keeps training and serving environments identical.
+# If pip cannot resolve them, build with the Python version of your training venv:
+#   docker compose build --build-arg PYTHON_VERSION=3.13 model-server
+ARG PYTHON_VERSION=3.12
+FROM python:${PYTHON_VERSION}-slim
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+WORKDIR /srv
+COPY models/champion/requirements.txt /tmp/model-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/model-requirements.txt
+EXPOSE 5001
+CMD ["mlflow", "models", "serve", "-m", "/model", "--host", "0.0.0.0", "--port", "5001", "--env-manager", "local"]

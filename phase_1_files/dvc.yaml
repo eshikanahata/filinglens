@@ -1,0 +1,28 @@
+stages:
+  download:
+    cmd: python -m src.ingestion.download_filings
+    deps:
+      - src/ingestion
+      - config/tickers.txt
+    params:
+      - data
+      - edgar.min_interval_seconds
+    outs:
+      - data/raw
+    metrics:
+      - reports/download_metrics.json:
+          cache: false
+
+  parse:
+    cmd: python -m src.parsing.parse_filings
+    deps:
+      - src/parsing
+      - data/raw
+    params:
+      - parsing
+    outs:
+      - data/parsed
+    metrics:
+      - reports/parse_metrics.json:
+          cache: false
+    # reports/parse_failures.csv is written too; it is small and goes in Git.

@@ -113,16 +113,20 @@ def log_model_compat(model: BaseEstimator, X: pd.DataFrame) -> str:
 
     cloudpickle is used because MLflow 3's default (skops) rejects XGBoost's numpy
     types. Acceptable here: models are produced and loaded locally by this project.
+    pyfunc_predict_fn="predict_proba" makes the served endpoint return class
+    probabilities (the backend needs P(underperform), not a hard 0/1 label).
     """
     sig = infer_signature(X, model.predict_proba(X))
     try:
         info = mlflow.sklearn.log_model(model, name="model", signature=sig,
                                         input_example=X.head(3),
-                                        serialization_format="cloudpickle")
+                                        serialization_format="cloudpickle",
+                                        pyfunc_predict_fn="predict_proba")
     except TypeError:
         info = mlflow.sklearn.log_model(model, artifact_path="model", signature=sig,
                                         input_example=X.head(3),
-                                        serialization_format="cloudpickle")
+                                        serialization_format="cloudpickle",
+                                        pyfunc_predict_fn="predict_proba")
     return info.model_uri
 
 

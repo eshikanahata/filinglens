@@ -1,0 +1,111 @@
+# Start everything with:  docker compose up --build
+# Prerequisite: `dvc repro` has produced data/serving and models/champion.
+services:
+  model-server:                       # MLflow serving the exported champion model
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.model
+    image: filinglens-model:latest
+    volumes:
+      - ./models/champion:/model:ro
+    ports:
+      - "5001:5001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/ping', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  backend:                            # FastAPI: validation, features, scoring, metrics
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    environment:
+      MODEL_SERVER_URL: http://model-server:5001
+      SERVING_DATA_PATH: /app/data/serving/filings.json
+      MODEL_INFO_PATH: /app/models/champion_info.json
+      REPORTS_DIR: /app/reports
+      ELEVATED_THRESHOLD: "0.60"
+      LOW_THRESHOLD: "0.40"
+    volumes:
+      - ./data/serving:/app/data/serving:ro
+      - ./models/champion_info.json:/app/models/champion_info.json:ro
+      - ./reports:/app/reports:ro
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      model-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:                           # Streamlit UI: knows only the backend URL
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    environment:
+      BACKEND_URL: http://backend:8000
+      GRAFANA_URL: http://localhost:3000        # opened by the user's browser, not the container
+      MLFLOW_UI_URL: http://localhost:5000
+      PROMETHEUS_URL: http://localhost:9090
+    ports:
+      - "8501:8501"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin          # local demo only
+      GF_SECURITY_ALLOW_EMBEDDING: "true"        # lets the console page embed panels
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  mlflow-ui:                          # experiment history; reuses the model image (same MLflow version)
+    image: filinglens-model:latest
+    pull_policy: never
+    command: ["mlflow", "server", "--backend-store-uri", "sqlite:////data/mlflow.db",
+              "--host", "0.0.0.0", "--port", "5000"]
+    volumes:
+      - ./mlflow.db:/data/mlflow.db
+      # artifacts are registered under their absolute host path, so mount them at the same path
+      - ${PWD}/mlartifacts:${PWD}/mlartifacts:ro
+    ports:
+      - "5000:5000"
+    depends_on:
+      - model-server
+    restart: unless-stopped

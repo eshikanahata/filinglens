@@ -83,6 +83,36 @@ stages:
       - split
       - labels
       - mlflow
+    outs:
+      - reports/train_run.json:
+          cache: false
+      - reports/model_comparison.csv:
+          cache: false
     metrics:
       - reports/train_metrics.json:
           cache: false
+
+  serving_data:
+    cmd: python -m src.serving.build_serving_data
+    deps:
+      - src/serving/build_serving_data.py
+      - src/common
+      - src/features
+      - data/features
+      - data/parsed
+    params:
+      - features
+    outs:
+      - data/serving
+
+  export_model:
+    cmd: python -m src.serving.export_model
+    deps:
+      - src/serving/export_model.py
+      - reports/train_run.json
+      - reports/train_metrics.json
+    params:
+      - mlflow
+    outs:
+      - models/champion
+      - models/champion_info.json
