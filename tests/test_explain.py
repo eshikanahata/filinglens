@@ -32,3 +32,11 @@ def test_reasons_capped_at_four():
                               "d_unc_ratio", "d_lit_ratio", "d_fk_grade")}
     pcts = {k: 95.0 for k in feats}
     assert len(build_reasons(feats, pcts)) == 4
+
+
+def test_statements_never_contain_nested_parentheses():
+    feats = {k: 0.1 for k in ("risk_words_change", "tfidf_similarity", "d_neg_ratio",
+                              "d_unc_ratio", "d_lit_ratio", "d_fk_grade")}
+    pcts = {**{k: 95.0 for k in feats}, "d_fk_grade": 10.0}
+    for statement in build_reasons({**feats, "d_fk_grade": -0.2}, pcts) + build_reasons(feats, {**pcts, "d_fk_grade": 99.0}):
+        assert statement.count("(") == 1 and statement.count(")") == 1, statement

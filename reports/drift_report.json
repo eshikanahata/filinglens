@@ -1,0 +1,102 @@
+{
+  "features": {
+    "neg_ratio": {
+      "psi": 0.149,
+      "ks_stat": 0.1776,
+      "ks_pvalue": 0.107058,
+      "drifted": false
+    },
+    "unc_ratio": {
+      "psi": 0.0883,
+      "ks_stat": 0.0618,
+      "ks_pvalue": 0.990474,
+      "drifted": false
+    },
+    "lit_ratio": {
+      "psi": 0.1935,
+      "ks_stat": 0.1646,
+      "ks_pvalue": 0.159953,
+      "drifted": false
+    },
+    "pos_ratio": {
+      "psi": 0.1004,
+      "ks_stat": 0.0692,
+      "ks_pvalue": 0.972186,
+      "drifted": false
+    },
+    "fk_grade": {
+      "psi": 0.1005,
+      "ks_stat": 0.1273,
+      "ks_pvalue": 0.430122,
+      "drifted": false
+    },
+    "avg_sentence_len": {
+      "psi": 0.1647,
+      "ks_stat": 0.0762,
+      "ks_pvalue": 0.937853,
+      "drifted": false
+    },
+    "log_risk_words": {
+      "psi": 0.0987,
+      "ks_stat": 0.1049,
+      "ks_pvalue": 0.668841,
+      "drifted": false
+    },
+    "risk_share": {
+      "psi": 0.1383,
+      "ks_stat": 0.1317,
+      "ks_pvalue": 0.389505,
+      "drifted": false
+    },
+    "risk_words_change": {
+      "psi": 0.5004,
+      "ks_stat": 0.1968,
+      "ks_pvalue": 0.055578,
+      "drifted": false
+    },
+    "tfidf_similarity": {
+      "psi": 0.229,
+      "ks_stat": 0.1668,
+      "ks_pvalue": 0.150525,
+      "drifted": false
+    },
+    "d_neg_ratio": {
+      "psi": 0.0668,
+      "ks_stat": 0.0888,
+      "ks_pvalue": 0.837664,
+      "drifted": false
+    },
+    "d_unc_ratio": {
+      "psi": 0.434,
+      "ks_stat": 0.2414,
+      "ks_pvalue": 0.00935,
+      "drifted": true
+    },
+    "d_lit_ratio": {
+      "psi": 0.2825,
+      "ks_stat": 0.2165,
+      "ks_pvalue": 0.026361,
+      "drifted": false
+    },
+    "d_fk_grade": {
+      "psi": 0.2613,
+      "ks_stat": 0.1378,
+      "ks_pvalue": 0.336105,
+      "drifted": false
+    }
+  },
+  "n_features": 14,
+  "n_drifted": 1,
+  "drifted_share": 0.0714,
+  "max_psi": 0.5004,
+  "drift_detected": false,
+  "n_reference": 175,
+  "n_current": 59,
+  "thresholds": {
+    "psi": 0.2,
+    "ks_alpha": 0.01,
+    "min_drifted_share": 0.25
+  },
+  "status": "ok",
+  "simulated": false
+}

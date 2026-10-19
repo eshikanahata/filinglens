@@ -92,6 +92,23 @@ stages:
       - reports/train_metrics.json:
           cache: false
 
+  drift:
+    cmd: python -m src.drift.check_drift
+    deps:
+      - src/drift
+      - src/features/columns.py
+      - src/common/run_log.py
+      - data/features
+    params:
+      - drift
+      - split
+    outs:
+      - reports/drift_report.json:
+          cache: false
+    metrics:
+      - reports/drift_metrics.json:
+          cache: false
+
   serving_data:
     cmd: python -m src.serving.build_serving_data
     deps:

@@ -1,0 +1,46 @@
+# Prometheus alert rules. Visible at http://localhost:9090/alerts (no notification
+# channel is configured: this is a local demo, so alerts are shown, not sent).
+groups:
+  - name: filinglens
+    rules:
+      - alert: BackendDown
+        expr: up{job="filinglens-backend"} == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "The FilingLens backend is not responding to Prometheus"
+
+      - alert: ModelServerErrors
+        expr: sum(rate(filinglens_model_requests_total{outcome="error"}[5m])) > 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "Calls to the model server are failing"
+
+      - alert: HighServerErrorRate
+        expr: sum(rate(filinglens_http_requests_total{status=~"5.."}[5m])) / sum(rate(filinglens_http_requests_total[5m])) > 0.05
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "More than 5% of requests are failing with server errors"
+
+      - alert: SlowResponses
+        expr: histogram_quantile(0.95, sum by (le) (rate(filinglens_http_request_duration_seconds_bucket[5m]))) > 1
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "95th percentile latency is above the 1 second target"
+
+      - alert: ParseSuccessBelowTarget
+        expr: filinglens_parse_success_ratio < 0.95
+        for: 1m
+        labels: {severity: warning}
+        annotations:
+          summary: "Filing parse success is below the 95% acceptance target"
+
+      - alert: DataDriftDetected
+        expr: filinglens_drift_detected == 1
+        for: 1m
+        labels: {severity: warning}
+        annotations:
+          summary: "The latest filings have drifted from the training data; consider retraining"

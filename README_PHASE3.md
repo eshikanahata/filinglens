@@ -65,7 +65,7 @@ from mlflow.tracking import MlflowClient
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
 MlflowClient().set_registered_model_alias("filinglens-risk", "champion", "1")   # back to version 1
 PY
-dvc repro -f export_model          # -f: the stage's dependencies did not change, so force it
+dvc repro -f -s export_model       # -s: this stage only; -f: its dependencies did not change
 docker compose restart model-server backend
 curl -s localhost:8000/analysis/AAPL | python -m json.tool | grep -A3 '"model"'   # version "1"
 ```

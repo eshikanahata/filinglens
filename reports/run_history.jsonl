@@ -1,0 +1,18 @@
+{"ts": "2026-10-17T09:33:50+00:00", "event": "drift_check", "status": "ok", "drifted_features": 1, "max_psi": 0.5004, "simulated": false, "n_current": 59}
+{"ts": "2026-10-17T17:18:19+00:00", "event": "drift_check", "status": "drift", "drifted_features": 14, "max_psi": 8.229, "simulated": true, "n_current": 59}
+{"ts": "2026-10-17T17:18:20+00:00", "event": "retrain_started", "status": "ok", "reason": "drift", "previous_version": "4"}
+{"ts": "2026-10-17T17:18:38+00:00", "event": "model_promoted", "status": "ok", "version": "5", "previous_version": "4", "prev_cv_auc": 0.5221007999584436, "new_cv_auc": 0.5221007999584436}
+{"ts": "2026-10-17T17:18:42+00:00", "event": "model_exported", "status": "ok", "version": "5"}
+{"ts": "2026-10-17T17:20:29+00:00", "event": "drift_check", "status": "drift", "drifted_features": 14, "max_psi": 8.229, "simulated": true, "n_current": 59}
+{"ts": "2026-10-17T17:20:30+00:00", "event": "retrain_started", "status": "ok", "reason": "drift", "previous_version": "5"}
+{"ts": "2026-10-17T17:20:48+00:00", "event": "model_promoted", "status": "ok", "version": "6", "previous_version": "5", "prev_cv_auc": 0.5221007999584436, "new_cv_auc": 0.5221007999584436}
+{"ts": "2026-10-17T17:20:51+00:00", "event": "model_exported", "status": "ok", "version": "6"}
+{"ts": "2026-10-17T17:23:46+00:00", "event": "drift_check", "status": "ok", "drifted_features": 1, "max_psi": 0.5004, "simulated": false, "n_current": 59}
+{"ts": "2026-10-17T17:23:47+00:00", "event": "retrain_started", "status": "ok", "reason": "forced", "previous_version": "6"}
+{"ts": "2026-10-17T17:24:04+00:00", "event": "model_promoted", "status": "ok", "version": "7", "previous_version": "6", "prev_cv_auc": 0.5221007999584436, "new_cv_auc": 0.5221007999584436}
+{"ts": "2026-10-17T17:24:07+00:00", "event": "model_exported", "status": "ok", "version": "7"}
+{"ts": "2026-10-19T05:18:24+00:00", "event": "drift_check", "status": "drift", "drifted_features": 14, "max_psi": 8.229, "simulated": true, "n_current": 59}
+{"ts": "2026-10-19T05:21:37+00:00", "event": "drift_check", "status": "ok", "drifted_features": 1, "max_psi": 0.5004, "simulated": false, "n_current": 59}
+{"ts": "2026-10-19T05:21:48+00:00", "event": "retrain_started", "status": "ok", "reason": "forced", "previous_version": "7"}
+{"ts": "2026-10-19T05:22:05+00:00", "event": "model_rollback", "status": "warning", "rejected_version": "8", "restored_version": "7", "prev_cv_auc": 0.5221007999584436, "new_cv_auc": 0.5221007999584436}
+{"ts": "2026-10-19T05:22:07+00:00", "event": "model_exported", "status": "ok", "version": "7"}

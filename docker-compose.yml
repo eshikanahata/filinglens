@@ -72,6 +72,7 @@ services:
     image: prom/prometheus:v2.55.1
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
     ports:
       - "9090:9090"
     depends_on:
@@ -97,7 +98,7 @@ services:
 
   mlflow-ui:                          # experiment history; reuses the model image (same MLflow version)
     image: filinglens-model:latest
-    pull_policy: never
+    pull_policy: never                # built locally by model-server, never pulled from a registry
     command: ["mlflow", "server", "--backend-store-uri", "sqlite:////data/mlflow.db",
               "--host", "0.0.0.0", "--port", "5000"]
     volumes:

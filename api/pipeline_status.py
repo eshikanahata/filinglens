@@ -7,7 +7,8 @@ from typing import Any, Dict, List, Optional
 
 STAGES = [("download", "download_metrics.json"), ("parse", "parse_metrics.json"),
           ("prices", "prices_metrics.json"), ("labels", "labels_metrics.json"),
-          ("features", "features_metrics.json"), ("train", "train_metrics.json")]
+          ("features", "features_metrics.json"), ("train", "train_metrics.json"),
+          ("drift", "drift_metrics.json")]
 PARSE_SUCCESS_TARGET = 0.95
 
 
@@ -33,9 +34,27 @@ def stage_state(name: str, m: Optional[dict]) -> str:
         return "warning"
     if name == "parse" and m.get("success_rate", 1.0) < PARSE_SUCCESS_TARGET:
         return "warning"
+    if name == "drift" and m.get("drift_detected", 0) == 1:
+        return "warning"
     if name == "prices" and (m.get("symbols_missing", 0) + m.get("symbols_sparse", 0)) > 0:
         return "warning"
     return "ok"
+
+
+def read_events(reports_dir: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    """Pipeline event log (reports/run_history.jsonl), newest first. Bad lines are skipped."""
+    try:
+        lines = (Path(reports_dir) / "run_history.jsonl").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    events: List[Dict[str, Any]] = []
+    for line in lines:
+        try:
+            events.append(json.loads(line))
+        except ValueError:
+            continue
+    events.reverse()
+    return events[:limit] if limit else events
 
 
 def _mtime(path: Path) -> Optional[str]:
@@ -58,4 +77,6 @@ def collect(reports_dir: str) -> Dict[str, Any]:
         "test_uncertainty": read_csv(base / "test_uncertainty.csv"),
         "ray_benchmark": read_json(base / "ray_benchmark.json") or [],
         "parse_failure_count": len(read_csv(base / "parse_failures.csv")),
+        "drift_report": read_json(base / "drift_report.json"),
+        "events": read_events(reports_dir, limit=20),
     }

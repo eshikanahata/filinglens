@@ -83,6 +83,8 @@ class PipelineResponse(BaseModel):
     test_uncertainty: List[Dict[str, Any]] = []
     ray_benchmark: List[Dict[str, Any]] = []
     parse_failure_count: int = 0
+    drift_report: Optional[Dict[str, Any]] = None
+    events: List[Dict[str, Any]] = []
     champion: Optional[ModelInfo] = None
 
 

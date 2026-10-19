@@ -1,0 +1,46 @@
+{
+  "base_url": "http://localhost:8000",
+  "companies": 54,
+  "repeats": 3,
+  "python": "3.14.4",
+  "machine": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+  "endpoints": {
+    "GET /health": {
+      "requests": 30,
+      "errors": 0,
+      "p50_ms": 7.4,
+      "p95_ms": 8.1,
+      "max_ms": 8.2
+    },
+    "GET /tickers": {
+      "requests": 30,
+      "errors": 0,
+      "p50_ms": 4.1,
+      "p95_ms": 5.0,
+      "max_ms": 5.4
+    },
+    "GET /analysis/{ticker}": {
+      "requests": 162,
+      "errors": 0,
+      "p50_ms": 17.2,
+      "p95_ms": 18.9,
+      "max_ms": 19.8
+    },
+    "GET /analysis/{ticker}/history": {
+      "requests": 162,
+      "errors": 0,
+      "p50_ms": 16.9,
+      "p95_ms": 18.5,
+      "max_ms": 20.2
+    },
+    "GET /pipeline/runs": {
+      "requests": 30,
+      "errors": 0,
+      "p50_ms": 5.4,
+      "p95_ms": 6.1,
+      "max_ms": 6.8
+    }
+  },
+  "target_ms": 1000.0,
+  "target_met": true
+}

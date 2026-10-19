@@ -49,7 +49,7 @@ def build_reasons(feats: Dict[str, Optional[float]], pcts: Dict[str, Optional[fl
     fk = feats.get("d_fk_grade")
     if fk is not None:
         verb = "harder" if fk >= 0 else "easier"
-        add("d_fk_grade", f"The risk section became {verb} to read ({abs(fk):.1f} grade levels)")
+        add("d_fk_grade", f"The risk section became {verb} to read by {abs(fk):.1f} grade levels")
 
     candidates.sort(key=lambda c: c[0], reverse=True)
     reasons = [text for _, text in candidates[:MAX_REASONS]]

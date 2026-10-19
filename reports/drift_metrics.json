@@ -1,0 +1,9 @@
+{
+  "drift_detected": 0,
+  "drifted_features": 1,
+  "drifted_share": 0.0714,
+  "max_psi": 0.5004,
+  "n_reference": 175,
+  "n_current": 59,
+  "simulated": 0
+}

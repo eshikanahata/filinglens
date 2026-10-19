@@ -1,0 +1,115 @@
+{
+  "modules": {
+    "test_api": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_dataset_split": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_deploy_config": {
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_drift": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_edgar_client": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_explain": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_export_model": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_features_pairing": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_frontend": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_frontend_app": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_labels": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_model_client_contract": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_parse_pipeline": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_phase4_wiring": {
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_pipeline_integration": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_positive_control": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_retrain": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_section_extractor": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_serving_data": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_text_metrics": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_train_smoke": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "total": {
+    "passed": 108,
+    "failed": 0,
+    "skipped": 0,
+    "total": 108
+  }
+}

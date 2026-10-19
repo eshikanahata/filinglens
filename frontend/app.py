@@ -51,12 +51,12 @@ def page_analysis() -> None:
     c1.markdown("**Risk signal**")
     c1.markdown(f"## {signal_markdown(signal['label'])}")
     if signal["score"] is not None:
-        c2.metric("Estimated chance of underperforming the market", fmt_pct(signal["score"]),
-                  help="Over roughly the 6 weeks after filing. Model accuracy could not be "
+        c2.metric("Chance of underperforming", fmt_pct(signal["score"]),
+                  help="Estimated chance of doing worse than the market over roughly the 6 weeks after filing. Model accuracy could not be "
                        "distinguished from chance, so treat this as one input among many.")
         c2.progress(float(signal["score"]))
     else:
-        c2.metric("Estimated chance of underperforming the market", "n/a")
+        c2.metric("Chance of underperforming", "n/a")
     c3.metric("Filing date", filing["filing_date"])
     c3.caption(f"Compared with the filing of {prev['filing_date']}" if prev else "No earlier filing to compare with")
 
@@ -126,6 +126,28 @@ def page_console() -> None:
     st.dataframe(pd.DataFrame([{"Stage": s["name"], "Status": STATUS_ICONS.get(s["status"], s["status"]),
                                 "Last updated": s["updated_at"] or "n/a"} for s in data["stages"]]),
                  hide_index=True, use_container_width=True)
+
+    drift = data.get("drift_report")
+    if drift and drift.get("status") == "ok":
+        st.subheader("Data drift")
+        x, y, z = st.columns(3)
+        x.metric("Drift detected", "YES" if drift["drift_detected"] else "No")
+        y.metric("Drifted features", f"{drift['n_drifted']} of {drift['n_features']}")
+        z.metric("Largest PSI", drift["max_psi"], help="Below 0.1 is stable; 0.2 or more is a significant shift.")
+        if drift.get("simulated"):
+            st.warning("This report uses a deliberately shifted batch (demo). Run the drift check "
+                       "again without the simulation flag to restore the real result.")
+        rows = [{"Feature": k, "PSI": v["psi"], "KS p-value": v["ks_pvalue"],
+                 "Drifted": "yes" if v["drifted"] else "no"} for k, v in drift["features"].items()]
+        st.dataframe(pd.DataFrame(rows).sort_values("PSI", ascending=False), hide_index=True,
+                     use_container_width=True)
+    elif drift:
+        st.subheader("Data drift")
+        st.info("Not enough recent filings yet to run a reliable drift check.")
+
+    if data.get("events"):
+        st.subheader("Recent pipeline events")
+        st.dataframe(pd.DataFrame(data["events"]), hide_index=True, use_container_width=True)
 
     if data["ray_benchmark"]:
         st.subheader("Ray parallel speed-up")

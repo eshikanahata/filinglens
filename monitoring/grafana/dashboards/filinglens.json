@@ -146,7 +146,7 @@
             "uid": "prometheus"
           },
           "expr": "histogram_quantile(0.95, sum by (le) (rate(filinglens_model_latency_seconds_bucket[5m])))",
-          "legendFormat": ""
+          "legendFormat": "model server p95"
         }
       ]
     },
@@ -165,7 +165,12 @@
         "h": 7
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
         "overrides": []
       },
       "targets": [
@@ -335,8 +340,29 @@
         "h": 7
       },
       "fieldConfig": {
-        "defaults": {},
-        "overrides": []
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*failed.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          }
+        ]
       },
       "targets": [
         {
@@ -416,7 +442,12 @@
         "h": 7
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
         "overrides": []
       },
       "targets": [
@@ -439,6 +470,175 @@
           "values": false
         }
       }
+    },
+    {
+      "id": 12,
+      "title": "Data drift detected",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 21,
+        "w": 8,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "No drift"
+                },
+                "1": {
+                  "text": "DRIFT"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "filinglens_drift_detected",
+          "legendFormat": ""
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "PSI by feature",
+      "type": "bargauge",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 8,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.1
+              },
+              {
+                "color": "red",
+                "value": 0.2
+              }
+            ]
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "filinglens_drift_psi",
+          "legendFormat": "{{feature}}"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Pipeline events logged",
+      "type": "bargauge",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 28,
+        "w": 8,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "filinglens_pipeline_events",
+          "legendFormat": "{{event}}"
+        }
+      ]
     }
   ]
 }

@@ -9,7 +9,7 @@ from pathlib import Path
 from prometheus_client import CollectorRegistry, Counter, Histogram
 from prometheus_client.core import GaugeMetricFamily
 
-from api.pipeline_status import collect, read_json
+from api.pipeline_status import collect, read_events, read_json
 
 
 class PipelineCollector:
@@ -39,6 +39,10 @@ class PipelineCollector:
             ("filinglens_train_champion_test_roc_auc", "Champion test ROC-AUC", "train", "champion_test_roc_auc"),
             ("filinglens_train_champion_cv_roc_auc", "Champion CV ROC-AUC", "train", "champion_cv_roc_auc"),
             ("filinglens_train_samples", "Training samples", "train", "n_train"),
+            ("filinglens_drift_detected", "1 if the latest batch drifted from the training data", "drift", "drift_detected"),
+            ("filinglens_drift_features_drifted", "Number of drifted features", "drift", "drifted_features"),
+            ("filinglens_drift_max_psi", "Largest per-feature PSI", "drift", "max_psi"),
+            ("filinglens_drift_simulated", "1 if the drift report used a deliberately shifted batch", "drift", "simulated"),
         ]
         for metric, doc, stage_name, key in singles:
             value = (by_name.get(stage_name) or {}).get(key)
@@ -52,6 +56,22 @@ class PipelineCollector:
         for row in data["ray_benchmark"]:
             bench.add_metric([str(row["workers"])], float(row["speedup_vs_1_worker"]))
         yield bench
+
+        psi = GaugeMetricFamily("filinglens_drift_psi", "Population Stability Index per feature",
+                                labels=["feature"])
+        for name, f in ((data.get("drift_report") or {}).get("features") or {}).items():
+            if f.get("psi") is not None:
+                psi.add_metric([name], float(f["psi"]))
+        yield psi
+
+        events = GaugeMetricFamily("filinglens_pipeline_events", "Pipeline events logged so far, by type",
+                                   labels=["event"])
+        counts: dict = {}
+        for e in read_events(self.reports_dir):
+            counts[e.get("event", "unknown")] = counts.get(e.get("event", "unknown"), 0) + 1
+        for name, n in counts.items():
+            events.add_metric([name], float(n))
+        yield events
 
         info = read_json(Path(self.model_info_path))
         model = GaugeMetricFamily("filinglens_model_info", "Currently served model (value is always 1)",

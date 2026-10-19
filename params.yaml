@@ -54,3 +54,14 @@ mlflow:
   tracking_uri: "sqlite:///mlflow.db"
   experiment_name: "filinglens"
   registered_model_name: "filinglens-risk"
+
+drift:
+  psi_threshold: 0.2              # per-feature PSI at or above this = significant shift
+  ks_alpha: 0.01                  # ... AND KS test p-value below this
+  min_drifted_share: 0.25         # batch drifts when this share of features has drifted
+  bins: 10
+  min_current_samples: 20         # fewer new filings than this: report "insufficient_data"
+  current_start_date: null        # null = use split.test_start_date
+
+retrain:
+  promotion_tolerance: 0.01       # promote unless new CV AUC is worse by more than this
