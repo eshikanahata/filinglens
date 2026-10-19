@@ -42,15 +42,22 @@ LABELS = Path("data/labels/labels.csv")
 REPORTS = Path("reports")
 
 
+# Generated or runtime paths that must not count as "uncommitted code". DVC deletes a stage's
+# declared outputs before running it, so without this exclusion every DVC-launched run would
+# report a dirty tree (for example a tracked reports/train_run.json that DVC just removed).
+GENERATED_PATHS = ["reports", "data", "models", "docs", "logs", "mlartifacts", "mlflow.db", "dvc.lock"]
+
+
 def git_info() -> Dict[str, str]:
-    """Commit hash and whether the working tree has uncommitted changes."""
+    """Commit hash, and whether source or configuration files have uncommitted changes."""
     def run(*args: str) -> Optional[str]:
         try:
             return subprocess.check_output(["git", *args], stderr=subprocess.DEVNULL, text=True).strip()
         except (OSError, subprocess.CalledProcessError):
             return None
     commit = run("rev-parse", "HEAD") or "unknown"
-    dirty = bool(run("status", "--porcelain"))
+    excludes = [f":(exclude){path}" for path in GENERATED_PATHS]
+    dirty = bool(run("status", "--porcelain", "--", ".", *excludes))
     return {"git_commit": commit, "git_dirty": str(dirty)}
 
 

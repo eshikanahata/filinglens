@@ -220,7 +220,7 @@ stages:
     outs:
     - path: reports/model_comparison.csv
       hash: md5
-      md5: 18e153dc857f21b6418e3d76e169f977
+      md5: 47a6a2555e6d2cbcce1d560d86b64255
       size: 692
     - path: reports/train_metrics.json
       hash: md5
@@ -228,7 +228,7 @@ stages:
       size: 208
     - path: reports/train_run.json
       hash: md5
-      md5: aa3808998d2f7fabaf4a13c63a92c269
+      md5: c9a3e17e9002f0d54b496b9258ceee43
       size: 419
   serving_data:
     cmd: python -m src.serving.build_serving_data
@@ -284,7 +284,7 @@ stages:
       size: 208
     - path: reports/train_run.json
       hash: md5
-      md5: aa3808998d2f7fabaf4a13c63a92c269
+      md5: c9a3e17e9002f0d54b496b9258ceee43
       size: 419
     - path: src/serving/export_model.py
       hash: md5
@@ -299,12 +299,12 @@ stages:
     outs:
     - path: models/champion
       hash: md5
-      md5: 18db2260442cbf64d4939653a926cb05.dir
+      md5: 4aed3c0bc1cde37bb33ec9d6428a84ae.dir
       size: 150636
       nfiles: 8
     - path: models/champion_info.json
       hash: md5
-      md5: 269779e32eb0d5cb8d5072e1ae0eaecc
+      md5: c22998e3738eaa2b57f880e2610cd94a
       size: 273
   drift:
     cmd: python -m src.drift.check_drift
