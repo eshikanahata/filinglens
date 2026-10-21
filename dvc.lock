@@ -192,8 +192,8 @@ stages:
       size: 502
     - path: src/training
       hash: md5
-      md5: 92fc6649c6f977ee5b062459e0b7e431.dir
-      size: 53579
+      md5: 91c65dd135d76f1226836a03944fba9a.dir
+      size: 54313
       nfiles: 9
     params:
       params.yaml:
@@ -220,7 +220,7 @@ stages:
     outs:
     - path: reports/model_comparison.csv
       hash: md5
-      md5: 47a6a2555e6d2cbcce1d560d86b64255
+      md5: 82bd120b044ed02de10c3c5ac561325b
       size: 692
     - path: reports/train_metrics.json
       hash: md5
@@ -228,8 +228,8 @@ stages:
       size: 208
     - path: reports/train_run.json
       hash: md5
-      md5: c9a3e17e9002f0d54b496b9258ceee43
-      size: 419
+      md5: f0de41ff2249d295637281c44b275106
+      size: 421
   serving_data:
     cmd: python -m src.serving.build_serving_data
     deps:
@@ -284,8 +284,8 @@ stages:
       size: 208
     - path: reports/train_run.json
       hash: md5
-      md5: c9a3e17e9002f0d54b496b9258ceee43
-      size: 419
+      md5: f0de41ff2249d295637281c44b275106
+      size: 421
     - path: src/serving/export_model.py
       hash: md5
       md5: 9448dc8fc43420f48ff252cd1b1515be
@@ -299,13 +299,13 @@ stages:
     outs:
     - path: models/champion
       hash: md5
-      md5: 4aed3c0bc1cde37bb33ec9d6428a84ae.dir
-      size: 150636
+      md5: 0730a5f0a26d17be1d63133c94ed1cb3.dir
+      size: 150637
       nfiles: 8
     - path: models/champion_info.json
       hash: md5
-      md5: c22998e3738eaa2b57f880e2610cd94a
-      size: 273
+      md5: 2b51fad72ff180880e53a1589b1952fc
+      size: 274
   drift:
     cmd: python -m src.drift.check_drift
     deps:
