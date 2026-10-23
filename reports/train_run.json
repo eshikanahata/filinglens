@@ -1,10 +1,10 @@
 {
   "champion_model": "logistic_regression",
-  "champion_run_id": "b533b1aad3fd4e27876cddb9d3ff7faa",
+  "champion_run_id": "9e3db67cab714c9fbc2f1862ee593e83",
   "registered_model": "filinglens-risk",
-  "registered_version": "13",
-  "git_commit": "c28c65fd0bf9b581b5b79defed6fc5c8fc75d20c",
-  "git_dirty": "True",
+  "registered_version": "14",
+  "git_commit": "1e4dea31647b66a7a7ba33ddb40256f5fcd25b95",
+  "git_dirty": "False",
   "features_sha256": "3fb3c05cdf84bd8640e783a8de4c2cede8fbbbe21fd3162b4d3e5962f4b4c56c",
   "labels_sha256": "a8ac6390ad380967fcf02f62c1be49cc812e928a3d7c16bad07c33e2329b48bd"
 }
