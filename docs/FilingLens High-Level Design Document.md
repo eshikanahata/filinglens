@@ -55,7 +55,7 @@ FilingLens turns a US company's annual report (SEC Form 10-K) into a simple, exp
 
 ### 3.2 Pipeline view (what runs when the system is built or refreshed)
 
-The pipeline is a DVC graph of eleven stages. Each stage declares its inputs, parameters and outputs, so DVC reruns only what is stale.
+The pipeline is a DVC graph of twelve stages. Each stage declares its inputs, parameters and outputs, so DVC reruns only what is stale.
 
 | Stage | What it does |
 | --- | --- |
@@ -68,6 +68,7 @@ The pipeline is a DVC graph of eleven stages. Each stage declares its inputs, pa
 | features | Builds text features for each filing and its year-over-year changes. |
 | train | Trains a baseline, logistic regression and XGBoost; logs everything to MLflow; registers the best candidate. |
 | drift | Compares the latest filings' features with the training period (PSI and KS test). |
+| eda | Exploratory data analysis: coverage per company and year, data-quality checks, label balance, text lengths, feature distributions and correlations, and train-versus-test shift. Writes `reports/eda/eda.md` with figures. |
 | serving\_data | Precomputes everything the backend needs per filing. |
 | export\_model | Copies the registry's champion model into a portable folder for the model server and records its SHA-256 checksum. |
 
@@ -124,6 +125,12 @@ A separate orchestrator runs one monitoring cycle: run the drift check; if drift
 - **Prices:** daily adjusted closes from a free source, plus the SPY index as the benchmark. Downloaded once and versioned in DVC because the source is unofficial and can be unreliable.
 - **Word lists:** the Loughran-McDonald finance dictionary (negative, positive, uncertainty and litigious words), downloaded manually under its academic-use licence.
 - **Universe:** a fixed list of large US companies. The served dataset contains 54 companies and 318 filings. Five companies on the original list are excluded and the reasons recorded in the ticker list: four for their filing layout (section 5.3) and Exxon Mobil, for which the download returned no 10-K in the date window.
+
+### 5.1a Exploratory data analysis
+
+The `eda` stage regenerates an analysis report (`reports/eda/eda.md`, with figures) every time the data changes, so the analysis always describes the dataset actually used. It checks coverage (filings per company and fiscal year, companies with far fewer filings than the others, missing years), data quality (parse failures, unlabeled filings, filings without a prior year), the label (abnormal-return distribution and class balance by year), text lengths, the feature distributions with their outlier shares and correlations, each feature's correlation with the label against a 95% noise band, and the shift between the training and test periods.
+
+The analysis shaped three decisions. Section lengths are strongly right-skewed, so the model uses the logarithm of the word count. Two readability features are almost perfectly correlated, which is tolerated because the models are regularised or shallow. And the feature-label correlations sit inside or near the noise band, which predicted the weak model result before any model was trained. The coverage check also proves its worth: run on the dataset from before the download fix, it lists exactly the eight companies whose older filings were missing (section 5.2).
 
 ### 5.2 Ingestion
 
@@ -253,7 +260,7 @@ Efficiency falls as workers increase, which is typical when workers share disk a
 - **Personal data:** none is processed.
 - **Not covered:** traffic between services and to the browser is plain HTTP on localhost and is not encrypted (see section 11).
 
-**Maintainability.** Configuration is externalised. The code follows a single style (flake8 with no warnings, formatted with black), enforced by the `lint` stage. It is covered by 126 automated tests, including static checks that the deployment files agree with each other and with the code (for example, that every container runs as non-root and that no password is hard-coded).
+**Maintainability.** Configuration is externalised. The code follows a single style (flake8 with no warnings, formatted with black), enforced by the `lint` stage. It is covered by 130 automated tests, including static checks that the deployment files agree with each other and with the code (for example, that every container runs as non-root and that no password is hard-coded).
 
 **Usability.** The interface uses plain language, explains every figure, states its limits, and handles errors without technical jargon. A help page and a user manual are provided.
 
@@ -277,7 +284,7 @@ Efficiency falls as workers increase, which is typical when workers share disk a
 | Design principles | Sections 3 and 4, with the interface contracts in 3.4; endpoints in the Low-Level Design |
 | Implementation | Sections 7 and 10 (flake8 and black style, security); code, logging, error handling and tests described in the Test Plan |
 | Testing | Test Plan and Test Report |
-| Data engineering | Sections 3.2, 5 and 10 (Ray parsing and benchmark) |
+| Data engineering | Sections 3.2, 5 and 10 (Ray parsing and benchmark; EDA stage in 5.1a) |
 | Source control and CI | Sections 3.2 and 9 (Git, DVC data and model versioning, `lint` and `test` DVC stages gating the model export, pre-commit hook) |
 | Experiment tracking | Sections 6 and 9 (MLflow runs, hashes, registry) |
 | Instrumentation and visualisation | Section 8 (Prometheus metrics from the backend and every container via cAdvisor, eight alert rules, Grafana) |

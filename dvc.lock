@@ -280,8 +280,8 @@ stages:
     deps:
     - path: reports/test_summary.json
       hash: md5
-      md5: eb52a5a9b2f27bc1410d57df23cd7987
-      size: 2199
+      md5: e660a8ba597e72d02f581e92a83a1f3c
+      size: 2281
     - path: reports/train_metrics.json
       hash: md5
       md5: 502c45b3eec0b3e9b5fa97b2bb1dfa9b
@@ -378,14 +378,14 @@ stages:
       nfiles: 6
     - path: src
       hash: md5
-      md5: 0fd06a7b668b4b769f19e0a52ce4b051.dir
-      size: 230035
-      nfiles: 61
+      md5: e496ef6ab0fa313ef8db4c23ed628061.dir
+      size: 286738
+      nfiles: 65
     - path: tests
       hash: md5
-      md5: 64fc6dcabe7cda4954c2759df8b645da.dir
-      size: 417017
-      nfiles: 50
+      md5: b58e996e71b101200921a0177ec2500d.dir
+      size: 435936
+      nfiles: 52
     outs:
     - path: reports/lint_report.txt
       hash: md5
@@ -415,24 +415,75 @@ stages:
       size: 30
     - path: src
       hash: md5
-      md5: 0fd06a7b668b4b769f19e0a52ce4b051.dir
-      size: 230035
-      nfiles: 61
+      md5: e496ef6ab0fa313ef8db4c23ed628061.dir
+      size: 286738
+      nfiles: 65
     - path: tests
       hash: md5
-      md5: 64fc6dcabe7cda4954c2759df8b645da.dir
-      size: 417017
-      nfiles: 50
+      md5: b58e996e71b101200921a0177ec2500d.dir
+      size: 435936
+      nfiles: 52
     outs:
     - path: reports/pytest_results.xml
       hash: md5
-      md5: 30ab389b65eb8784fa75836dfad9f625
-      size: 13816
+      md5: c05174a95756011d0c71f7449704bc19
+      size: 14213
     - path: reports/test_summary.json
       hash: md5
-      md5: eb52a5a9b2f27bc1410d57df23cd7987
-      size: 2199
+      md5: e660a8ba597e72d02f581e92a83a1f3c
+      size: 2281
     - path: reports/test_summary.md
       hash: md5
-      md5: 86324e061e1b2499f066e995dd8ba0f0
-      size: 886
+      md5: 6f938ba3bcdbb14b4f8bbb89efb5f4cb
+      size: 911
+  eda:
+    cmd: python -m src.analysis.eda
+    deps:
+    - path: data/features
+      hash: md5
+      md5: 119404848953dd89e096b90393b63da8.dir
+      size: 309092
+      nfiles: 2
+    - path: data/labels
+      hash: md5
+      md5: fa9fd776b091f9992a0a17e4401252f8.dir
+      size: 44941
+      nfiles: 1
+    - path: data/parsed
+      hash: md5
+      md5: 2e4b27c81eadd959845afbdda2b00729.dir
+      size: 21176769
+      nfiles: 318
+    - path: data/raw
+      hash: md5
+      md5: d0c604ee29d93e2e91fac34e5a746319.dir
+      size: 1305585435
+      nfiles: 319
+    - path: reports/parse_failures.csv
+      hash: md5
+      md5: 83b604b07e8372e7cfd67002f31d876b
+      size: 24
+    - path: src/analysis
+      hash: md5
+      md5: 23145a66686de0745a60bce1466cf012.dir
+      size: 56703
+      nfiles: 4
+    - path: src/features/columns.py
+      hash: md5
+      md5: 5480d4a171d5d59d8b104e8244d68757
+      size: 478
+    params:
+      params.yaml:
+        split:
+          test_start_date: '2025-07-01'
+          embargo_days: 45
+    outs:
+    - path: reports/eda
+      hash: md5
+      md5: d9610beebcfd43804511e50d88f87113.dir
+      size: 324686
+      nfiles: 7
+    - path: reports/eda_metrics.json
+      hash: md5
+      md5: 5ecd841457ab6a68eb03df18c063a21d
+      size: 448

@@ -448,6 +448,7 @@ A percentile is the rank (0 to 100) of a filing's value among all filings that h
 | features | `src.features.build_features` | `data/parsed`, Loughran-McDonald dictionary | features, split | `data/features` (`features.csv`, `tfidf_vectorizer.joblib`) | `features_metrics.json` |
 | train | `src.training.train` | `data/features`, `data/labels` | train, split, labels, mlflow | MLflow runs and registered model; `train_run.json`, `model_comparison.csv` | `train_metrics.json` |
 | drift | `src.drift.check_drift` | `data/features` | drift, split | `drift_report.json` | `drift_metrics.json` |
+| eda | `src.analysis.eda` | `data/raw`, `data/parsed`, `data/labels`, `data/features`, `parse_failures.csv` | split | `reports/eda/` (`eda.md` and six figures) | `eda_metrics.json` |
 | serving\_data | `src.serving.build_serving_data` | `data/features`, `data/parsed` | features | `data/serving/filings.json` | none |
 | export\_model | `src.serving.export_model` | registry, `train_run.json`, `train_metrics.json`, `test_summary.json` (CI gate) | mlflow | `models/champion` (including `model.sha256`), `models/champion_info.json` | none |
 

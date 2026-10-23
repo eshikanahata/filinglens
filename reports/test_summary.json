@@ -20,6 +20,11 @@
       "failed": 0,
       "skipped": 0
     },
+    "test_eda": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
     "test_edgar_client": {
       "passed": 8,
       "failed": 0,
@@ -117,9 +122,9 @@
     }
   },
   "total": {
-    "passed": 126,
+    "passed": 130,
     "failed": 0,
     "skipped": 0,
-    "total": 126
+    "total": 130
   }
 }

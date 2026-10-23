@@ -1,0 +1,18 @@
+{
+  "companies": 54,
+  "filings": 318,
+  "companies_with_fewer_than_2_filings": 0,
+  "companies_with_few_filings": 0,
+  "coverage_gaps": 0,
+  "parse_failures": 0,
+  "labeled": 316,
+  "positive_rate": 0.4778,
+  "with_prior": 264,
+  "n_train": 202,
+  "n_test": 58,
+  "max_abs_label_correlation": 0.1239,
+  "label_noise_band": 0.1379,
+  "features_outside_noise_band": 0,
+  "max_abs_train_test_shift_sd": 0.363,
+  "highly_correlated_feature_pairs": 1
+}

@@ -143,6 +143,25 @@ stages:
       - reports/drift_metrics.json:
           cache: false
 
+  eda:
+    cmd: python -m src.analysis.eda
+    deps:
+      - src/analysis
+      - src/features/columns.py
+      - data/raw
+      - data/parsed
+      - data/labels
+      - data/features
+      - reports/parse_failures.csv
+    params:
+      - split
+    outs:
+      - reports/eda:
+          cache: false
+    metrics:
+      - reports/eda_metrics.json:
+          cache: false
+
   serving_data:
     cmd: python -m src.serving.build_serving_data
     deps:

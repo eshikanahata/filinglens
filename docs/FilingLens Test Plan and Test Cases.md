@@ -65,7 +65,7 @@ These come from the project proposal. Each is judged against evidence, and the o
 
 ## 6. Automated Test Inventory
 
-The suite contains **126** automated tests in 23 modules. The count per module is taken from the JUnit report.
+The suite contains **130** automated tests in 24 modules. The count per module is taken from the JUnit report.
 
 | Module | Tests | Level | What it verifies |
 | --- | --- | --- | --- |
@@ -80,6 +80,7 @@ The suite contains **126** automated tests in 23 modules. The count per module i
 | `test_train_smoke` | 1 | Integration | The training stage runs with a real MLflow store, logs three runs with tags and metrics, registers the champion and sets its alias |
 | `test_positive_control` | 3 | Integration | Logistic regression and XGBoost both recover a planted signal (AUC above 0.8); bootstrap intervals separate signal from noise |
 | `test_export_model` | 3 | Integration | The exported model loads from a plain folder and returns class probabilities; the model description file is built correctly; the checksum file matches the model file |
+| `test_eda` | 4 | Unit and integration | Missing years are counted only inside a company's run; outlier share; a planted feature-label signal is found and the noise band is correct; the report is built end to end and flags a company with few filings |
 | `test_serving_data` | 2 | Unit | Percentile ranks only among filings with a prior year; changed-term detection |
 | `test_explain` | 5 | Unit | Signal labels at their thresholds; unusual changes are selected, ordered and capped at four; a fallback statement when nothing stands out; statements never contain nested parentheses |
 | `test_model_client_contract` | 2 | Unit | The number of predictions must equal the number of rows sent |

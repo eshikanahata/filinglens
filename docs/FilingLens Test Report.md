@@ -6,7 +6,7 @@ This report gives the results of running the Test Plan. Evidence files are in `d
 
 ## 1. Summary
 
-- **Automated tests:** 126 tests in 23 modules, all passing. The first full run, before the fixes described in section 9, had 108 tests, all passing. The suite now runs as the DVC `test` stage, on every commit through a git hook, and in a fresh environment through `mlflow run . -e test`.
+- **Automated tests:** 130 tests in 24 modules, all passing. The first full run, before the fixes described in section 9, had 108 tests, all passing. The suite now runs as the DVC `test` stage, on every commit through a git hook, and in a fresh environment through `mlflow run . -e test`.
 - **Code style:** flake8 reports 0 warnings (maximum line length 120); the code is formatted with black. This is enforced by the DVC `lint` stage.
 - **Manual system tests:** 27 cases. Of the original 23, eighteen passed on the first attempt and five needed attention (ST-05 not run at first, ST-06 incomplete, ST-10 failed, ST-21 partial, ST-22 failed); all were fixed or completed. Four cases (ST-24 to ST-27) were added with the security, monitoring and CI improvements. **All 27 now pass.**
 - **Acceptance criteria:** seven of eight are met. **AC-3 is not met:** the final model cannot be distinguished from the majority-class baseline (section 5 and 7).
@@ -18,7 +18,7 @@ The test scope, levels and strategy are in the Test Plan. Environment: a persona
 
 ## 3. Automated Test Results
 
-Final run: **126 passed, 0 failed, 0 skipped**.
+Final run: **130 passed, 0 failed, 0 skipped**.
 
 | Test module | Passed | Failed | Skipped |
 | --- | --- | --- | --- |
@@ -27,6 +27,7 @@ Final run: **126 passed, 0 failed, 0 skipped**.
 | test\_deploy\_config | 23 | 0 | 0 |
 | test\_drift | 11 | 0 | 0 |
 | test\_edgar\_client | 8 | 0 | 0 |
+| test\_eda | 4 | 0 | 0 |
 | test\_explain | 5 | 0 | 0 |
 | test\_export\_model | 3 | 0 | 0 |
 | test\_features\_pairing | 2 | 0 | 0 |
@@ -45,9 +46,9 @@ Final run: **126 passed, 0 failed, 0 skipped**.
 | test\_serving\_data | 2 | 0 | 0 |
 | test\_text\_metrics | 8 | 0 | 0 |
 | test\_train\_smoke | 1 | 0 | 0 |
-| **Total (126)** | **126** | **0** | **0** |
+| **Total (130)** | **130** | **0** | **0** |
 
-The first full run (108 tests, all passing) is the same table without `test_git_info`, `test_retrain_cli`, one test in `test_explain`, three tests in `test_edgar_client`, one in `test_export_model` and six in `test_deploy_config`. Those eighteen tests were added after testing and review exposed the problems in section 9, so each one guards against a real defect or gap that was found.
+The first full run (108 tests, all passing) is the same table without `test_git_info`, `test_retrain_cli`, one test in `test_explain`, three tests in `test_edgar_client`, one in `test_export_model`, six in `test_deploy_config` and the four in `test_eda`. Those twenty-two tests were added after testing and review exposed the problems in section 9, so each one guards against a real defect or gap that was found.
 
 **Code style.** `flake8 api frontend src tests scripts` reports 0 warnings (`reports/lint_report.txt`). Before the style configuration was added, flake8 reported 28 warnings (unused imports, several imports on one line, ambiguous variable names, long lines) and black would have reformatted 59 files; all were fixed.
 
@@ -99,7 +100,7 @@ Evidence file names refer to `docs/screenshots/`.
 | AC-4 | API 95th percentile latency under 1 second | **Met** | 18.9 ms (19.3 ms in an earlier run), zero errors |
 | AC-5 | Drift check detects a deliberately shifted batch and triggers retraining | **Met** | 14 of 14 features drifted (largest PSI 8.23); retraining started and completed; automated tests cover the same path |
 | AC-6 | All services start with one `docker compose up` | **Met** | Seven services started; the data and model folders it mounts must first exist from `dvc repro` |
-| AC-7 | Unit tests pass, with counts reported | **Met** | 126 of 126 passed |
+| AC-7 | Unit tests pass, with counts reported | **Met** | 130 of 130 passed |
 | AC-8 | flake8 reports no warnings | **Met** | 0 warnings (`reports/lint_report.txt`), enforced by the `lint` stage |
 
 ## 6. Performance Results
@@ -191,4 +192,4 @@ Time-based split: 202 training filings, 58 test filings, with a 45-day embargo. 
 
 ## 11. Conclusion
 
-The system works end to end and was tested at every level: 126 automated tests pass with no style warnings, all 27 manual system tests pass after fixes, and seven of eight acceptance criteria are met. The one unmet criterion is a statement about the data, not the engineering: with 202 training filings the model is indistinguishable from chance, and this is reported openly, with confidence intervals, a positive-control test, and an application that says so to its users. Testing and review were productive: they found twenty-one real problems, including four that only appeared when the full stack ran and one that silently removed data, and each is now guarded by a test or a documented process step.
+The system works end to end and was tested at every level: 130 automated tests pass with no style warnings, all 27 manual system tests pass after fixes, and seven of eight acceptance criteria are met. The one unmet criterion is a statement about the data, not the engineering: with 202 training filings the model is indistinguishable from chance, and this is reported openly, with confidence intervals, a positive-control test, and an application that says so to its users. Testing and review were productive: they found twenty-one real problems, including four that only appeared when the full stack ran and one that silently removed data, and each is now guarded by a test or a documented process step.
