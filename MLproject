@@ -1,0 +1,13 @@
+name: filinglens
+
+python_env: python_env.yaml
+
+entry_points:
+  pipeline:
+    command: "dvc repro"
+  train:
+    command: "python -m src.training.train"
+  retrain:
+    command: "python -m src.drift.retrain"
+  test:
+    command: "pytest -q"
