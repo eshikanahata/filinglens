@@ -6,6 +6,7 @@ self-contained folder (models/champion) plus a small info file for the backend.
 Rollback = move the `champion` alias in the registry, then rerun this stage.
 """
 
+import hashlib
 import json
 import logging
 import shutil
@@ -38,6 +39,17 @@ def export_champion(tracking_uri: str, name: str, alias: str, dst: Path) -> str:
     return str(version)
 
 
+def write_checksum(dst: Path, model_file: str = "model.pkl") -> str:
+    """Record the SHA-256 of the model file next to it (sha256sum format).
+
+    The model-server container runs `sha256sum -c model.sha256` before serving, so a model
+    file that was altered or corrupted after export is refused instead of loaded.
+    """
+    digest = hashlib.sha256((dst / model_file).read_bytes()).hexdigest()
+    (dst / "model.sha256").write_text(f"{digest}  {model_file}\n")
+    return digest
+
+
 def build_info(version: str, alias: str, train_run: Dict, train_metrics: Dict) -> Dict:
     return {
         "registered_model": train_run.get("registered_model"),
@@ -65,7 +77,9 @@ def main() -> None:
             version,
             train_run.get("registered_version"),
         )
-    INFO.write_text(json.dumps(build_info(version, alias, train_run, train_metrics), indent=2))
+    info = build_info(version, alias, train_run, train_metrics)
+    info["model_sha256"] = write_checksum(DST)
+    INFO.write_text(json.dumps(info, indent=2))
     logger.info("Exported %s v%s to %s", cfg["registered_model_name"], version, DST)
 
 

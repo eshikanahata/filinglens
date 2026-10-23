@@ -44,3 +44,17 @@ groups:
         labels: {severity: warning}
         annotations:
           summary: "The latest filings have drifted from the training data; consider retraining"
+
+      - alert: ModelServerContainerDown
+        expr: absent(container_last_seen{name=~".*model-server.*"})
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "The model-server container is not running"
+
+      - alert: ScrapeTargetDown
+        expr: up{job!="filinglens-backend"} == 0
+        for: 1m
+        labels: {severity: warning}
+        annotations:
+          summary: "Prometheus cannot scrape {{ $labels.job }}"

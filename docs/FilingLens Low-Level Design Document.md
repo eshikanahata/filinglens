@@ -1,6 +1,6 @@
 # FilingLens: Low-Level Design Document
 
-Eshika Nahata (DA24B004) | Individual project | Version 1.0 | API version 1.0.0
+Eshika Nahata (DA24B004) | Individual project | Version 1.1 | API version 1.0.0
 
 ## 1. Purpose and Conventions
 
@@ -49,7 +49,7 @@ Liveness and dependency check. Always returns 200 so the container is considered
 | `companies` | integer | Number of distinct companies |
 
 ```json
-{"status": "ok", "model_server": "up", "filings_loaded": 290, "companies": 54}
+{"status": "ok", "model_server": "up", "filings_loaded": 318, "companies": 54}
 ```
 
 ### 3.2 `GET /tickers`
@@ -151,7 +151,7 @@ Analysis of a company's most recent filing.
   "changes": {"risk_section_change_pct": 0.18, "text_similarity": 0.74, "negative_tone_change": 0.0004,
               "uncertainty_change": 0.0011, "litigious_change": 0.0, "readability_grade_change": 0.3,
               "new_terms": ["supply chain"], "dropped_terms": ["covid"]},
-  "model": {"name": "xgboost", "version": "3", "run_id": "5dd9fce2", "test_roc_auc": 0.4815, "cv_roc_auc": 0.5221},
+  "model": {"name": "logistic_regression", "version": "3", "run_id": "5dd9fce2", "test_roc_auc": 0.444, "cv_roc_auc": 0.4829},
   "disclaimer": "FilingLens is decision support, not financial advice. ..."
 }
 ```
@@ -324,6 +324,7 @@ Each filing entry:
 | `run_id` | MLflow run that trained it |
 | `git_commit` | Commit hash at training time |
 | `test_roc_auc`, `cv_roc_auc` | Held-out and cross-validation scores |
+| `model_sha256` | SHA-256 of `model.pkl`, also written to `models/champion/model.sha256` in `sha256sum` format. The model-server container runs `sha256sum -c model.sha256` before serving and refuses to start on a mismatch |
 
 ### 7.3 Stage reports (in `reports/`)
 
@@ -404,6 +405,10 @@ The backend exposes these at `/metrics`. Request and model metrics are updated a
 | `SlowResponses` | 95th percentile latency above 1 second | 5 min | warning |
 | `ParseSuccessBelowTarget` | parse success ratio below 0.95 | 1 min | warning |
 | `DataDriftDetected` | drift flag equals 1 | 1 min | warning |
+| `ModelServerContainerDown` | cAdvisor no longer reports a running model-server container | 1 min | critical |
+| `ScrapeTargetDown` | any scrape target other than the backend is down (cAdvisor, Prometheus) | 1 min | warning |
+
+**Container metrics** come from cAdvisor (job `cadvisor`, `cadvisor:8080`), not from the backend. The dashboard uses `container_cpu_usage_seconds_total` (CPU per container), `container_memory_working_set_bytes` (memory per container) and `container_last_seen` (containers running), filtered to named containers. Prometheus also scrapes itself (job `prometheus`).
 
 ## 9. Business Rules
 
@@ -434,7 +439,9 @@ A percentile is the rank (0 to 100) of a filing's value among all filings that h
 
 | Stage | Command (module) | Inputs | Parameter groups | Outputs | Metrics file |
 | --- | --- | --- | --- | --- | --- |
-| download | `src.ingestion.download_filings` | ticker list, SEC EDGAR | data, edgar | `data/raw` (filing HTML, `manifest.csv`) | `download_metrics.json` |
+| lint | `flake8 api frontend src tests scripts` | code, `.flake8` | none | `reports/lint_report.txt` (empty plus a pass line when clean; the stage fails on any warning) | none |
+| test | `pytest -q --junitxml=...` then `scripts/summarize_tests.py` | code, tests, `pytest.ini`, lint report | none | `pytest_results.xml`, `test_summary.md` | `test_summary.json` |
+| download | `src.ingestion.download_filings` | ticker list, SEC EDGAR (submissions `recent` block plus older pages) | data, edgar | `data/raw` (filing HTML, `manifest.csv` with one row per filing and a `no_filings` row for a ticker without 10-Ks in the window) | `download_metrics.json` (includes `tickers_without_filings`) |
 | parse | `src.parsing.parse_filings` | `data/raw` | parsing | `data/parsed` (one JSON per filing: ticker, accession, dates, `risk_factors`, `risk_words`, `full_words`) | `parse_metrics.json` |
 | prices | `src.ingestion.download_prices` | ticker list, price source | prices | `data/prices/prices.csv` | `prices_metrics.json` |
 | labels | `src.labels.make_labels` | `data/parsed`, `data/prices` | labels | `data/labels/labels.csv` | `labels_metrics.json` |
@@ -442,7 +449,7 @@ A percentile is the rank (0 to 100) of a filing's value among all filings that h
 | train | `src.training.train` | `data/features`, `data/labels` | train, split, labels, mlflow | MLflow runs and registered model; `train_run.json`, `model_comparison.csv` | `train_metrics.json` |
 | drift | `src.drift.check_drift` | `data/features` | drift, split | `drift_report.json` | `drift_metrics.json` |
 | serving\_data | `src.serving.build_serving_data` | `data/features`, `data/parsed` | features | `data/serving/filings.json` | none |
-| export\_model | `src.serving.export_model` | registry, `train_run.json`, `train_metrics.json` | mlflow | `models/champion`, `models/champion_info.json` | none |
+| export\_model | `src.serving.export_model` | registry, `train_run.json`, `train_metrics.json`, `test_summary.json` (CI gate) | mlflow | `models/champion` (including `model.sha256`), `models/champion_info.json` | none |
 
 Run outside the DVC graph: `src.parsing.benchmark_ray` (writes `ray_benchmark.json`), `src.training.evaluate_uncertainty` (writes `test_uncertainty.csv`), and `src.drift.retrain` (section 11.5).
 

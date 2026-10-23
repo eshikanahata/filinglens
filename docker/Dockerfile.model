@@ -9,5 +9,9 @@ ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /srv
 COPY models/champion/requirements.txt /tmp/model-requirements.txt
 RUN pip install --no-cache-dir -r /tmp/model-requirements.txt
+# Run as an unprivileged user (the model folder is mounted read-only)
+RUN useradd --create-home app
+USER app
 EXPOSE 5001
-CMD ["mlflow", "models", "serve", "-m", "/model", "--host", "0.0.0.0", "--port", "5001", "--env-manager", "local"]
+# Refuse to start if the model file does not match the checksum written at export time
+CMD ["sh", "-c", "cd /model && sha256sum -c model.sha256 && exec mlflow models serve -m /model --host 0.0.0.0 --port 5001 --env-manager local"]

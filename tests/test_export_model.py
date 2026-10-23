@@ -47,3 +47,14 @@ def test_build_info():
     assert info["version"] == "4" and info["champion_model"] == "xgboost"
     assert info["test_roc_auc"] == 0.48
     json.dumps(info)
+
+
+def test_write_checksum_matches_model_file(tmp_path):
+    import hashlib
+
+    from src.serving.export_model import write_checksum
+
+    (tmp_path / "model.pkl").write_bytes(b"model bytes")
+    digest = write_checksum(tmp_path)
+    assert digest == hashlib.sha256(b"model bytes").hexdigest()
+    assert (tmp_path / "model.sha256").read_text() == f"{digest}  model.pkl\n"

@@ -11,7 +11,7 @@
       "skipped": 0
     },
     "test_deploy_config": {
-      "passed": 17,
+      "passed": 23,
       "failed": 0,
       "skipped": 0
     },
@@ -31,7 +31,7 @@
       "skipped": 0
     },
     "test_export_model": {
-      "passed": 2,
+      "passed": 3,
       "failed": 0,
       "skipped": 0
     },
@@ -117,9 +117,9 @@
     }
   },
   "total": {
-    "passed": 119,
+    "passed": 126,
     "failed": 0,
     "skipped": 0,
-    "total": 119
+    "total": 126
   }
 }

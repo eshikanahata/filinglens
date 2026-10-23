@@ -280,7 +280,7 @@ stages:
     deps:
     - path: reports/test_summary.json
       hash: md5
-      md5: c25482aedcd45e6bc87a646886d4e64e
+      md5: eb52a5a9b2f27bc1410d57df23cd7987
       size: 2199
     - path: reports/train_metrics.json
       hash: md5
@@ -292,8 +292,8 @@ stages:
       size: 432
     - path: src/serving/export_model.py
       hash: md5
-      md5: 309d3a95e33475fc3335955623033513
-      size: 2771
+      md5: 3209d77be2edbc31f17470155ed91574
+      size: 3335
     params:
       params.yaml:
         mlflow:
@@ -303,13 +303,13 @@ stages:
     outs:
     - path: models/champion
       hash: md5
-      md5: 736c1f6511cb1191d59afbd09f87f23b.dir
-      size: 7373
-      nfiles: 8
+      md5: cbef489656ce7e9cea099b2afb61f9cf.dir
+      size: 7449
+      nfiles: 9
     - path: models/champion_info.json
       hash: md5
-      md5: cbd069d2ffe28c1181a8033e2539dde6
-      size: 285
+      md5: bb4154bf12bdfb208f8d1fc8e488c63a
+      size: 371
   drift:
     cmd: python -m src.drift.check_drift
     deps:
@@ -378,13 +378,13 @@ stages:
       nfiles: 6
     - path: src
       hash: md5
-      md5: e9d97b5fcaee1fc8ccabfab1e0336342.dir
-      size: 228476
+      md5: 0fd06a7b668b4b769f19e0a52ce4b051.dir
+      size: 230035
       nfiles: 61
     - path: tests
       hash: md5
-      md5: 00473a664e0e33ba1c640bbc58882cfc.dir
-      size: 406296
+      md5: 64fc6dcabe7cda4954c2759df8b645da.dir
+      size: 417017
       nfiles: 50
     outs:
     - path: reports/lint_report.txt
@@ -415,24 +415,24 @@ stages:
       size: 30
     - path: src
       hash: md5
-      md5: e9d97b5fcaee1fc8ccabfab1e0336342.dir
-      size: 228476
+      md5: 0fd06a7b668b4b769f19e0a52ce4b051.dir
+      size: 230035
       nfiles: 61
     - path: tests
       hash: md5
-      md5: 00473a664e0e33ba1c640bbc58882cfc.dir
-      size: 406296
+      md5: 64fc6dcabe7cda4954c2759df8b645da.dir
+      size: 417017
       nfiles: 50
     outs:
     - path: reports/pytest_results.xml
       hash: md5
-      md5: 63b3de5c142a171f20e6c6bfb9eb6205
-      size: 13020
+      md5: 30ab389b65eb8784fa75836dfad9f625
+      size: 13816
     - path: reports/test_summary.json
       hash: md5
-      md5: c25482aedcd45e6bc87a646886d4e64e
+      md5: eb52a5a9b2f27bc1410d57df23cd7987
       size: 2199
     - path: reports/test_summary.md
       hash: md5
-      md5: 5c2ec8968307bd8a95ead64b8d53ee76
+      md5: 86324e061e1b2499f066e995dd8ba0f0
       size: 886

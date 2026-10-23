@@ -8,39 +8,43 @@ on purpose.
 
 Tip for screenshots: Linux `PrtSc` or `Shift+PrtSc` (select area). Crop to the relevant part.
 
-## Results summary (fill in)
+## Results summary
 
 | ID | Title | Result |
 |---|---|---|
-| ST-01 | Start everything with one command | |
-| ST-02 | Analyse a company | |
-| ST-03 | History view | |
-| ST-04 | Invalid and unknown tickers | |
-| ST-05 | Help page and responsive layout | |
-| ST-06 | Pipeline console | |
-| ST-07 | Prometheus target and alert rules | |
-| ST-08 | Metrics change with traffic | |
-| ST-09 | Grafana dashboard | |
-| ST-10 | DVC pipeline is reproducible | |
-| ST-11 | Experiment tracking in MLflow | |
-| ST-12 | Model registry matches what is served | |
-| ST-13 | Result traceable to a Git commit | |
-| ST-14 | Parse success and exclusions | |
-| ST-15 | Ray speed-up | |
-| ST-16 | Latency target | |
-| ST-17 | Containers run as non-root | |
-| ST-18 | No drift on real data | |
-| ST-19 | Model server outage | |
-| ST-20 | Backend outage | |
-| ST-21 | Drift detected and retraining triggered | |
-| ST-22 | Rollback of a worse model | |
-| ST-23 | Reset to real drift result | |
+| ST-01 | Start everything with one command | Pass |
+| ST-02 | Analyse a company | Pass |
+| ST-03 | History view | Pass |
+| ST-04 | Invalid and unknown tickers | Pass |
+| ST-05 | Help page and responsive layout | Pass |
+| ST-06 | Pipeline console | Pass |
+| ST-07 | Prometheus target and alert rules | Pass |
+| ST-08 | Metrics change with traffic | Pass |
+| ST-09 | Grafana dashboard | Pass |
+| ST-10 | DVC pipeline is reproducible | Pass |
+| ST-11 | Experiment tracking in MLflow | Pass |
+| ST-12 | Model registry matches what is served | Pass |
+| ST-13 | Result traceable to a Git commit | Pass |
+| ST-14 | Parse success and exclusions | Pass |
+| ST-15 | Ray speed-up | Pass |
+| ST-16 | Latency target | Pass |
+| ST-17 | Containers run as non-root | Pass |
+| ST-18 | No drift on real data | Pass |
+| ST-19 | Model server outage | Pass |
+| ST-20 | Backend outage | Pass |
+| ST-21 | Drift detected and retraining triggered | Pass |
+| ST-22 | Rollback of a worse model | Pass |
+| ST-23 | Reset to real drift result | Pass |
+| ST-24 | Tampered model is refused | Pass |
+| ST-25 | Container-down alert | Pass |
+| ST-26 | Lint and tests gate commits and the model export | Pass |
+| ST-27 | Tests in a fresh environment (MLproject) | Pass |
 
 ---
 
 ## ST-01 Start everything with one command
 **Steps:** `docker compose down`, then `docker compose up -d`, wait 40 seconds, then `docker compose ps`.
-**Expected:** six services running; `model-server`, `backend` and `frontend` show `(healthy)`.
+**Expected:** seven services running (including `cadvisor`); `model-server`, `backend` and `frontend` show `(healthy)`.
 **Evidence:** paste the `docker compose ps` output into `docs/screenshots/compose_ps.txt`.
 **Result:** [✔] Pass  [ ] Fail  
 
@@ -89,8 +93,9 @@ graphs.
 
 ## ST-07 Prometheus target and alert rules
 **Steps:** open http://localhost:9090/targets and http://localhost:9090/alerts.
-**Expected:** target `filinglens-backend` is **UP**; six alert rules are listed (BackendDown, ModelServerErrors,
-HighServerErrorRate, SlowResponses, ParseSuccessBelowTarget, DataDriftDetected), all inactive.
+**Expected:** targets `filinglens-backend`, `cadvisor` and `prometheus` are **UP**; eight alert rules are listed
+(BackendDown, ModelServerErrors, HighServerErrorRate, SlowResponses, ParseSuccessBelowTarget, DataDriftDetected,
+ModelServerContainerDown, ScrapeTargetDown), all inactive.
 **Evidence:** `prometheus_targets.png`, `prometheus_alerts.png`
 **Result:** [✔] Pass  [ ] Fail   
 
@@ -107,11 +112,12 @@ eval $M
 **Result:** [✔] Pass  [ ] Fail   
 
 ## ST-09 Grafana dashboard
-**Steps:** open http://localhost:3000 (login `admin` / `admin`), Dashboards, **FilingLens**.
+**Steps:** open http://localhost:3000 (login `admin` and the `GRAFANA_ADMIN_PASSWORD` from `.env`), Dashboards, **FilingLens**.
 **Expected:** the dashboard loads with its panels (request rate, latency, model server calls, analyses by signal,
 parse success, throughput, filings by stage, champion AUC, Ray speed-up, drift detected, PSI by feature,
-pipeline events). Panels fed by recent traffic show data.
-**Evidence:** `grafana_dashboard.png`
+pipeline events, container CPU, container memory, containers running). Panels fed by recent traffic show data,
+and the container panels show one line per container.
+**Evidence:** `grafana_dashboard.png`, `grafana_containers.png`
 **Result:** [✔] Pass  [ ] Fail  
 
 ## ST-10 DVC pipeline is reproducible
@@ -153,8 +159,8 @@ command prints `commit`.
 
 ## ST-14 Parse success and exclusions
 **Steps:** `cat reports/parse_metrics.json`, `wc -l reports/parse_failures.csv`, `grep -i excluded config/tickers.txt`.
-**Expected:** `success_rate` is 1.0 and `filings_total` is 290; the failures file has only its header line (1 line);
-four excluded companies are listed with reasons.
+**Expected:** `success_rate` is 1.0 and `filings_total` is 318; the failures file has only its header line (1 line);
+five excluded companies are listed with reasons.
 **Evidence:** paste into `docs/screenshots/parse_evidence.txt`.
 **Result:** [✔] Pass  [ ] Fail  
 
@@ -172,8 +178,9 @@ MET.
 **Result:** [✔] Pass  [ ] Fail   
 
 ## ST-17 Containers run as non-root
-**Steps:** `docker compose exec backend id -u` and `docker compose exec frontend id -u`.
-**Expected:** neither prints `0`.
+**Steps:** `docker compose exec model-server id -u`, `docker compose exec backend id -u` and
+`docker compose exec frontend id -u`.
+**Expected:** none prints `0`.
 **Evidence:** paste into `docs/screenshots/nonroot.txt`.
 **Result:** [✔] Pass  [ ] Fail   
 
@@ -240,3 +247,38 @@ event log shows `drift_check` (status drift), `retrain_started`, `model_promoted
 after a minute or two.
 **Evidence:** paste into `docs/screenshots/drift_reset.txt`.
 **Result:** [✔] Pass  [ ] Fail  
+
+## ST-24 Tampered model is refused  (changes state)
+**Steps:**
+1. `docker compose logs model-server | head -3` (first line `model.pkl: OK`)
+2. `echo x >> models/champion/model.pkl`, then `docker compose restart model-server`
+3. `docker compose logs --tail 5 model-server`
+4. Restore: `dvc checkout models/champion`, then `docker compose restart model-server`
+**Expected:** step 3 shows `model.pkl: FAILED` and `WARNING: 1 computed checksum did NOT match`, and the server does
+not start serving; after step 4 the log shows `model.pkl: OK` and analysis works again.
+**Evidence:** `checksum_refused.png`
+**Result:** [✔] Pass  [ ] Fail
+
+## ST-25 Container-down alert  (changes state)
+**Steps:** `docker compose stop model-server`, wait about two minutes, open http://localhost:9090/alerts, then
+`docker compose start model-server`.
+**Expected:** `ModelServerContainerDown` goes pending, then firing; it returns to inactive after the restart.
+**Evidence:** `alert_container_down.png`
+**Result:** [✔] Pass  [ ] Fail
+
+## ST-26 Lint and tests gate commits and the model export
+**Steps:**
+1. `dvc repro lint test`, then `cat reports/lint_report.txt` and `tail -1 reports/test_summary.md`
+2. `dvc dag`
+3. `echo 'import os' >> src/common/records.py`, then `git commit -am "should be blocked"`, then
+   `git checkout src/common/records.py`
+**Expected:** step 1: `flake8 passed with 0 warnings` and every test passed; step 2: `lint` → `test` → `export_model`;
+step 3: the hook prints the flake8 error and `CI failed: commit blocked`, and no commit is created.
+**Evidence:** `ci_pass.png`, `dvc_dag.png`, `ci_blocked_commit.png`
+**Result:** [✔] Pass  [ ] Fail
+
+## ST-27 Tests in a fresh environment (MLproject)
+**Steps:** `mlflow run . -e test` (pyenv must be installed; the first run builds Python and takes several minutes).
+**Expected:** the output ends with all tests passed and `=== Run (ID '...') succeeded ===`.
+**Evidence:** `mlproject_test.png`
+**Result:** [✔] Pass  [ ] Fail

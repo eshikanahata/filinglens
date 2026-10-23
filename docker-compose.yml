@@ -83,7 +83,7 @@ services:
     image: grafana/grafana:11.3.0
     environment:
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin          # local demo only
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env}
       GF_SECURITY_ALLOW_EMBEDDING: "true"        # lets the console page embed panels
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
@@ -94,6 +94,22 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+    restart: unless-stopped
+
+  cadvisor:                           # CPU, memory and liveness of every container, for Prometheus
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    command: ["--docker_only=true", "--housekeeping_interval=10s"]
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8080:8080"
     restart: unless-stopped
 
   mlflow-ui:                          # experiment history; reuses the model image (same MLflow version)

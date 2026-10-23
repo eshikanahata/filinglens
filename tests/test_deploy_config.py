@@ -124,3 +124,25 @@ def test_dvc_pipeline_has_serving_stages_in_order():
     assert "models/champion" in stages["export_model"]["outs"]
     # the download stage must not depend on the whole ingestion folder (price code lives there too)
     assert "src/ingestion" not in stages["download"]["deps"]
+
+
+@pytest.mark.parametrize("dockerfile", ["Dockerfile.backend", "Dockerfile.frontend", "Dockerfile.model"])
+def test_containers_run_as_non_root(dockerfile):
+    assert re.search(r"^USER (?!root)\w+", (ROOT / "docker" / dockerfile).read_text(), flags=re.M)
+
+
+def test_model_server_verifies_checksum_before_serving():
+    cmd = [ln for ln in (ROOT / "docker/Dockerfile.model").read_text().splitlines() if ln.startswith("CMD")][-1]
+    assert cmd.index("sha256sum -c model.sha256") < cmd.index("mlflow models serve")
+
+
+def test_no_hardcoded_grafana_password():
+    env = SERVICES["grafana"]["environment"]
+    assert env["GF_SECURITY_ADMIN_PASSWORD"].startswith("${GRAFANA_ADMIN_PASSWORD")
+
+
+def test_every_container_is_monitored():
+    cfg = yaml.safe_load((ROOT / "monitoring/prometheus.yml").read_text())
+    jobs = {j["job_name"] for j in cfg["scrape_configs"]}
+    assert {"filinglens-backend", "cadvisor"} <= jobs
+    assert "cadvisor" in SERVICES
