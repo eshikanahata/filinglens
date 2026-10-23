@@ -10,7 +10,7 @@ This report gives the results of running the Test Plan. Evidence files are in `d
 - **Code style:** flake8 reports 0 warnings (maximum line length 120); the code is formatted with black. This is enforced by the DVC `lint` stage.
 - **Manual system tests:** 27 cases. Of the original 23, eighteen passed on the first attempt and five needed attention (ST-05 not run at first, ST-06 incomplete, ST-10 failed, ST-21 partial, ST-22 failed); all were fixed or completed. Four cases (ST-24 to ST-27) were added with the security, monitoring and CI improvements. **All 27 now pass.**
 - **Acceptance criteria:** seven of eight are met. **AC-3 is not met:** the final model cannot be distinguished from the majority-class baseline (section 5 and 7).
-- **Problems found and resolved:** twenty-one, listed in section 9. They include a mistake in the deployment instructions, an unclean pipeline status, a rollback that did not trigger, a reproducibility flag that was wrong, and a download bug that silently missed older filings for twelve companies.
+- **Problems found and resolved:** twenty-two, listed in section 9. They include a mistake in the deployment instructions, an unclean pipeline status, a rollback that did not trigger, a reproducibility flag that was wrong, and a download bug that silently missed older filings for twelve companies.
 
 ## 2. Scope and Environment
 
@@ -180,6 +180,8 @@ Time-based split: 202 training filings, 58 test filings, with a 45-day embargo. 
 | 20 | Review | The model server ran as root, and the Grafana admin password was hard-coded in the compose file | Defaults | Non-root user in the model image; password read from the git-ignored `.env`; static tests for both |
 | 21 | Review | Only the backend was monitored; the model server, frontend and other containers had no metrics | MLflow serving and Streamlit have no Prometheus endpoint | cAdvisor added and scraped; container CPU, memory and count panels; `ModelServerContainerDown` and `ScrapeTargetDown` alerts |
 
+| 22 | Evidence review (User Manual screenshots) | The history chart's axis ran from -0.1, cut off the highest point, and its title was clipped | Automatic axis range of the default line chart | A chart with a fixed 0 to 100% axis, horizontal date labels and the signal thresholds drawn as dashed lines |
+
 ## 10. Limitations and Residual Risks
 
 - **No detectable predictive signal.** Acceptance criterion AC-3 is not met, and the application states plainly that the score is of limited reliability. A larger dataset is the main route to a more informative result.
@@ -192,4 +194,4 @@ Time-based split: 202 training filings, 58 test filings, with a 45-day embargo. 
 
 ## 11. Conclusion
 
-The system works end to end and was tested at every level: 130 automated tests pass with no style warnings, all 27 manual system tests pass after fixes, and seven of eight acceptance criteria are met. The one unmet criterion is a statement about the data, not the engineering: with 202 training filings the model is indistinguishable from chance, and this is reported openly, with confidence intervals, a positive-control test, and an application that says so to its users. Testing and review were productive: they found twenty-one real problems, including four that only appeared when the full stack ran and one that silently removed data, and each is now guarded by a test or a documented process step.
+The system works end to end and was tested at every level: 130 automated tests pass with no style warnings, all 27 manual system tests pass after fixes, and seven of eight acceptance criteria are met. The one unmet criterion is a statement about the data, not the engineering: with 202 training filings the model is indistinguishable from chance, and this is reported openly, with confidence intervals, a positive-control test, and an application that says so to its users. Testing and review were productive: they found twenty-two real problems, including four that only appeared when the full stack ran and one that silently removed data, and each is now guarded by a test or a documented process step.

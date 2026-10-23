@@ -2,6 +2,7 @@
 
 import os
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -23,6 +24,27 @@ MLFLOW_UI_URL = os.environ.get("MLFLOW_UI_URL", "http://localhost:5000")
 PROMETHEUS_URL = os.environ.get("PROMETHEUS_URL", "http://localhost:9090")
 
 st.set_page_config(page_title="FilingLens", page_icon="🔎", layout="wide")
+
+
+def history_chart(scored: pd.DataFrame, low: float, elevated: float) -> alt.LayerChart:
+    """Estimated chance per filing on a fixed 0-100% axis, with the signal thresholds as dashed lines."""
+    data = scored.assign(chance=scored["score"] * 100)
+    line = (
+        alt.Chart(data)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X("filing_date:N", title="Filing date", axis=alt.Axis(labelAngle=0)),
+            y=alt.Y("chance:Q", title="Estimated chance (%)", scale=alt.Scale(domain=[0, 100])),
+            tooltip=[
+                alt.Tooltip("filing_date:N", title="Filing date"),
+                alt.Tooltip("label:N", title="Signal"),
+                alt.Tooltip("chance:Q", title="Chance (%)", format=".0f"),
+            ],
+        )
+    )
+    thresholds = pd.DataFrame({"chance": [100 * low, 100 * elevated]})
+    rules = alt.Chart(thresholds).mark_rule(strokeDash=[4, 4], color="gray").encode(y="chance:Q")
+    return line + rules
 
 
 @st.cache_data(ttl=60, show_spinner=False)
@@ -100,7 +122,11 @@ def page_analysis() -> None:
             df = pd.DataFrame(points)
             scored = df.dropna(subset=["score"])
             if len(scored) >= 2:
-                st.line_chart(scored.set_index("filing_date")["score"], y_label="Estimated chance")
+                sig = result.get("signal") or {}
+                st.altair_chart(
+                    history_chart(scored, sig.get("low_threshold", 0.4), sig.get("elevated_threshold", 0.6)),
+                    use_container_width=True,
+                )
             st.dataframe(
                 df[["filing_date", "label", "score", "text_similarity"]].rename(
                     columns={

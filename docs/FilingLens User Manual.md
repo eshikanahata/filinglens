@@ -1,6 +1,6 @@
 # FilingLens: User Manual
 
-Eshika Nahata (DA24B004) | Version 1.0 | For anyone who wants to understand a company's annual report without reading all of it
+Eshika Nahata (DA24B004) | Version 1.1 | For anyone who wants to understand a company's annual report without reading all of it
 
 ## 1. What FilingLens Does
 
@@ -24,7 +24,9 @@ For each company it shows:
    - **Pipeline console**: a status page for the person who runs the system (section 10).
    - **How to use**: a short help page.
 
-&#91;Screenshot: the Company analysis page before a company is chosen, with the sidebar\]
+![The Company analysis page before a company is chosen. The sidebar on the left switches between the three pages.](screenshots/ui_start.png)
+
+*The Company analysis page before a company is chosen. The sidebar on the left switches between the three pages.*
 
 ## 3. Looking Up a Company
 
@@ -42,7 +44,9 @@ For each company it shows:
 
 **Step 5. Open the history.** Click *Signal across this company's filings* to see earlier years (section 5).
 
-&#91;Screenshot: the result for AAPL, from the risk signal down to the six change figures\]
+![The result for Apple (AAPL): the risk signal and chance of underperforming at the top, then what stands out and the six figures that changed since last year.](screenshots/ui_analysis.png)
+
+*The result for Apple (AAPL): the risk signal and chance of underperforming at the top, then what stands out and the six figures that changed since last year.*
 
 ## 4. What Each Figure Means
 
@@ -73,7 +77,9 @@ Under the main results, click **Signal across this company's filings**. You see:
 
 The oldest report always shows *Not enough data*, because it has no earlier report to compare with.
 
-&#91;Screenshot: the history chart and table for AAPL\]
+![The history view for Apple: the estimated chance for each year as a chart, and the same years in a table.](screenshots/ui_history.png)
+
+*The history view for Apple: the estimated chance for each year as a chart, and the same years in a table.*
 
 ## 6. Reading the Results Sensibly
 
@@ -87,7 +93,9 @@ The oldest report always shows *Not enough data*, because it has no earlier repo
 
 The page adapts to narrow screens. The three columns at the top stack into a single column, and the figures follow one under another. Tap the arrow at the top left to open the sidebar and change pages. Nothing is cut off.
 
-&#91;Screenshot: the analysis page on a phone-width screen\]
+![The analysis page on a narrow screen: the columns stack into one and nothing is cut off.](screenshots/ui_mobile.png)
+
+*The analysis page on a narrow screen: the columns stack into one and nothing is cut off.*
 
 ## 7. If Something Goes Wrong
 
@@ -99,7 +107,9 @@ The page adapts to narrow screens. The three columns at the top stack into a sin
 | *Not enough data* as a signal | Not an error: this is the company's earliest report in the collection. | Nothing to do. |
 | No chart in the history view | A chart needs at least two scored years. | Nothing to do; the table still shows what is available. |
 
-&#91;Screenshot: the message shown when the scoring service is unavailable\]
+![The friendly message shown when the scoring service is not responding. No technical error text is shown.](screenshots/ui_error_model_down.png)
+
+*The friendly message shown when the scoring service is not responding. No technical error text is shown.*
 
 The application never shows technical error text. If you ever see a long technical message, please report it.
 
@@ -111,7 +121,7 @@ The application never shows technical error text. If you ever see a long technic
 
 **How up to date is it?** Each company shows the date of its latest report in the list. The data is refreshed by the person who runs the system.
 
-**Why is a company I know missing?** The collection is a fixed list of 54 companies. A few large companies publish their annual reports in a format that FilingLens cannot read reliably, so they are not included.
+**Why is a company I know missing?** The collection is a fixed list of 54 companies. A few large companies publish their annual reports in a format that FilingLens cannot read reliably, and one was not available from the SEC's data service for the years covered, so they are not included.
 
 **What does "filings in this dataset" mean?** The other annual reports in the collection, across all companies and years.
 
@@ -125,7 +135,9 @@ The **How to use** page in the sidebar has a short version of this manual, and a
 
 The **Pipeline console** page is for the operator, not for the casual reader.
 
-&#91;Screenshot: the Pipeline console, top of the page with the stage table\]
+![The top of the Pipeline console: headline numbers, then the status of each pipeline stage.](screenshots/console_stages.png)
+
+*The top of the Pipeline console: headline numbers, then the status of each pipeline stage.*
 
 It shows:
 
@@ -141,7 +153,13 @@ It shows:
 
 - start: `docker compose up -d` (wait about 40 seconds);
 - stop: `docker compose down`;
-- check: `docker compose ps` should show the services running, with three marked healthy.
+- check: `docker compose ps` should show seven services running, with three marked healthy.
+
+**Monitoring tools.** Grafana (`http://localhost:3000`) can be viewed without logging in; to change a dashboard, log in as `admin` with the password set in the `.env` file on the host computer. Prometheus (`http://localhost:9090`) shows the alert rules, and cAdvisor (`http://localhost:8080`) shows each service's use of the computer's memory and processor.
+
+**Model safety check.** Before the scoring service starts, it checks that the model file has not been changed since it was produced. If the check fails, the service does not start and the application shows the *scoring service is temporarily unavailable* message. Restore the model with `dvc checkout models/champion` and restart the service with `docker compose restart model-server`.
+
+**About the data.** A report describing the collection of annual reports (how many per company and year, data-quality checks and charts) is in `reports/eda/eda.md` in the project folder. It is regenerated every time the data is refreshed.
 
 If the page reports that a service is unavailable, run `docker compose ps` to see which service stopped and `docker compose logs <service>` to see why. Further operating commands, including retraining and rolling back a model, are in the project README.
 

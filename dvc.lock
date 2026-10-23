@@ -368,8 +368,8 @@ stages:
       nfiles: 19
     - path: frontend
       hash: md5
-      md5: dc4f956f3725556fe687b90b09f1045b.dir
-      size: 22315
+      md5: fe90d85b843a5d1619590dee96b0d759.dir
+      size: 23457
       nfiles: 8
     - path: scripts
       hash: md5
@@ -402,8 +402,8 @@ stages:
       nfiles: 19
     - path: frontend
       hash: md5
-      md5: dc4f956f3725556fe687b90b09f1045b.dir
-      size: 22315
+      md5: fe90d85b843a5d1619590dee96b0d759.dir
+      size: 23457
       nfiles: 8
     - path: pytest.ini
       hash: md5
@@ -415,9 +415,9 @@ stages:
       size: 30
     - path: src
       hash: md5
-      md5: e496ef6ab0fa313ef8db4c23ed628061.dir
-      size: 286738
-      nfiles: 65
+      md5: af1f5c777e28d5556906183ba84f38d4.dir
+      size: 275866
+      nfiles: 64
     - path: tests
       hash: md5
       md5: b58e996e71b101200921a0177ec2500d.dir
@@ -426,7 +426,7 @@ stages:
     outs:
     - path: reports/pytest_results.xml
       hash: md5
-      md5: c05174a95756011d0c71f7449704bc19
+      md5: 0d1ac0919528785c320053de6bd80785
       size: 14213
     - path: reports/test_summary.json
       hash: md5
