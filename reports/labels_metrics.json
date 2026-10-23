@@ -1,7 +1,7 @@
 {
-  "filings_total": 290,
-  "filings_labeled": 288,
+  "filings_total": 318,
+  "filings_labeled": 316,
   "filings_unlabeled": 2,
-  "positive_rate": 0.4618,
+  "positive_rate": 0.4778,
   "horizon_trading_days": 30
 }

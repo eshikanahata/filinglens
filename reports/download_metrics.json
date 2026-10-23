@@ -1,7 +1,8 @@
 {
-  "tickers": 55,
-  "filings_total": 290,
-  "filings_ok": 290,
+  "tickers": 54,
+  "tickers_without_filings": 0,
+  "filings_total": 318,
+  "filings_ok": 318,
   "filings_failed": 0,
-  "elapsed_seconds": 149.6
+  "elapsed_seconds": 109.0
 }

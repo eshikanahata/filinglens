@@ -1,7 +1,7 @@
 {
-  "filings": 290,
-  "with_prior": 236,
-  "tfidf_fit_filings": 228,
+  "filings": 318,
+  "with_prior": 264,
+  "tfidf_fit_filings": 256,
   "tfidf_vocab": 5000,
   "train_end": "2025-05-17"
 }

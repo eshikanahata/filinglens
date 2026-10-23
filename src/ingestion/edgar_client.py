@@ -10,7 +10,7 @@ import os
 import threading
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence
 from pathlib import Path
 import requests
 from requests.adapters import HTTPAdapter
@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 
 TICKER_MAP_URL = "https://www.sec.gov/files/company_tickers.json"
 SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik:010d}.json"
+# Older filings live in extra pages listed under filings.files (recent holds only ~1,000 entries)
+SUBMISSIONS_PAGE_URL = "https://data.sec.gov/submissions/{name}"
+_KEYS = ("accessionNumber", "filingDate", "reportDate", "form", "primaryDocument")
 ARCHIVE_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{document}"
 
 
@@ -54,6 +57,7 @@ def get_user_agent() -> str:
             "real contact). See .env.example."
         )
     return ua
+
 
 class RateLimiter:
     """Thread-safe minimum spacing between requests."""
@@ -99,29 +103,25 @@ def select_filings(
     form_type: str = "10-K",
     start_date: str = "2021-01-01",
     end_date: Optional[str] = None,
+    older_pages: Sequence[dict] = (),
 ) -> List[FilingRef]:
-    """Pick matching filings out of an EDGAR submissions JSON (pure function).
+    """Pick matching filings out of EDGAR submissions JSON (pure function).
 
+    Reads the `recent` block plus any older pages (same columns, at top level).
     Only exact form matches are kept, so 10-K/A and 10-KT are excluded.
+    Duplicate accession numbers across blocks are kept once.
     """
-    recent = submissions.get("filings", {}).get("recent", {})
-    keys = ("accessionNumber", "filingDate", "reportDate", "form", "primaryDocument")
-    columns = [recent.get(k, []) for k in keys]
+    blocks = [submissions.get("filings", {}).get("recent", {}), *older_pages]
+    seen = set()
     out: List[FilingRef] = []
-    for acc, fdate, rdate, form, doc in zip(*columns):
-        if form != form_type or not doc:
-            continue
-        if fdate < start_date or (end_date and fdate > end_date):
-            continue
-        out.append(FilingRef(ticker, cik, acc, form, fdate, rdate, doc))
-
-    older = submissions.get("filings", {}).get("files", [])
-    dates = recent.get("filingDate", [])
-    if older and dates and min(dates) > start_date:
-        logger.warning(
-            "%s: window starts %s but 'recent' only reaches back to %s; older "
-            "filings are not fetched", ticker, start_date, min(dates),
-        )
+    for block in blocks:
+        for acc, fdate, rdate, form, doc in zip(*[block.get(k, []) for k in _KEYS]):
+            if acc in seen or form != form_type or not doc:
+                continue
+            if fdate < start_date or (end_date and fdate > end_date):
+                continue
+            seen.add(acc)
+            out.append(FilingRef(ticker, cik, acc, form, fdate, rdate, doc))
     return sorted(out, key=lambda f: f.filing_date)
 
 
@@ -150,13 +150,28 @@ class EdgarClient:
         except requests.RequestException as exc:
             raise EdgarError(f"GET {url} failed: {exc}") from exc
 
+    def _get_json(self, url: str) -> dict:
+        """GET and decode JSON; a malformed body becomes an EdgarError, not a crash."""
+        try:
+            return self._get(url).json()
+        except ValueError as exc:
+            raise EdgarError(f"GET {url} returned invalid JSON: {exc}") from exc
+
+    def get_older_pages(self, submissions: dict, start_date: str) -> List[dict]:
+        """Fetch the extra submissions pages whose date range overlaps the window."""
+        pages = []
+        for f in submissions.get("filings", {}).get("files", []):
+            if f.get("filingTo", "9999-12-31") >= start_date:
+                pages.append(self._get_json(SUBMISSIONS_PAGE_URL.format(name=f["name"])))
+        return pages
+
     def get_ticker_map(self) -> Dict[str, int]:
         """Ticker (upper case) -> CIK."""
-        data = self._get(TICKER_MAP_URL).json()
+        data = self._get_json(TICKER_MAP_URL)
         return {row["ticker"].upper(): int(row["cik_str"]) for row in data.values()}
 
     def get_submissions(self, cik: int) -> dict:
-        return self._get(SUBMISSIONS_URL.format(cik=cik)).json()
+        return self._get_json(SUBMISSIONS_URL.format(cik=cik))
 
     def download_document(self, filing: FilingRef) -> bytes:
         return self._get(filing.url).content

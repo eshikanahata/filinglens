@@ -1,97 +1,97 @@
 {
   "features": {
     "neg_ratio": {
-      "psi": 0.149,
-      "ks_stat": 0.1776,
-      "ks_pvalue": 0.107058,
+      "psi": 0.1884,
+      "ks_stat": 0.1769,
+      "ks_pvalue": 0.09593,
       "drifted": false
     },
     "unc_ratio": {
-      "psi": 0.0883,
-      "ks_stat": 0.0618,
-      "ks_pvalue": 0.990474,
+      "psi": 0.1005,
+      "ks_stat": 0.0749,
+      "ks_pvalue": 0.936412,
       "drifted": false
     },
     "lit_ratio": {
-      "psi": 0.1935,
-      "ks_stat": 0.1646,
-      "ks_pvalue": 0.159953,
+      "psi": 0.1155,
+      "ks_stat": 0.1378,
+      "ks_pvalue": 0.309316,
       "drifted": false
     },
     "pos_ratio": {
-      "psi": 0.1004,
-      "ks_stat": 0.0692,
-      "ks_pvalue": 0.972186,
+      "psi": 0.1315,
+      "ks_stat": 0.0744,
+      "ks_pvalue": 0.939227,
       "drifted": false
     },
     "fk_grade": {
-      "psi": 0.1005,
-      "ks_stat": 0.1273,
-      "ks_pvalue": 0.430122,
+      "psi": 0.0909,
+      "ks_stat": 0.0993,
+      "ks_pvalue": 0.706846,
       "drifted": false
     },
     "avg_sentence_len": {
-      "psi": 0.1647,
-      "ks_stat": 0.0762,
-      "ks_pvalue": 0.937853,
+      "psi": 0.1619,
+      "ks_stat": 0.0599,
+      "ks_pvalue": 0.991825,
       "drifted": false
     },
     "log_risk_words": {
-      "psi": 0.0987,
-      "ks_stat": 0.1049,
-      "ks_pvalue": 0.668841,
+      "psi": 0.1328,
+      "ks_stat": 0.0731,
+      "ks_pvalue": 0.947017,
       "drifted": false
     },
     "risk_share": {
-      "psi": 0.1383,
-      "ks_stat": 0.1317,
-      "ks_pvalue": 0.389505,
+      "psi": 0.1034,
+      "ks_stat": 0.0909,
+      "ks_pvalue": 0.798959,
       "drifted": false
     },
     "risk_words_change": {
-      "psi": 0.5004,
-      "ks_stat": 0.1968,
-      "ks_pvalue": 0.055578,
+      "psi": 0.5023,
+      "ks_stat": 0.1992,
+      "ks_pvalue": 0.043142,
       "drifted": false
     },
     "tfidf_similarity": {
-      "psi": 0.229,
-      "ks_stat": 0.1668,
-      "ks_pvalue": 0.150525,
+      "psi": 0.1572,
+      "ks_stat": 0.1317,
+      "ks_pvalue": 0.361556,
       "drifted": false
     },
     "d_neg_ratio": {
-      "psi": 0.0668,
-      "ks_stat": 0.0888,
-      "ks_pvalue": 0.837664,
+      "psi": 0.0847,
+      "ks_stat": 0.0632,
+      "ks_pvalue": 0.985551,
       "drifted": false
     },
     "d_unc_ratio": {
-      "psi": 0.434,
-      "ks_stat": 0.2414,
-      "ks_pvalue": 0.00935,
+      "psi": 0.3902,
+      "ks_stat": 0.2447,
+      "ks_pvalue": 0.006238,
       "drifted": true
     },
     "d_lit_ratio": {
-      "psi": 0.2825,
-      "ks_stat": 0.2165,
-      "ks_pvalue": 0.026361,
+      "psi": 0.3422,
+      "ks_stat": 0.23,
+      "ks_pvalue": 0.012194,
       "drifted": false
     },
     "d_fk_grade": {
-      "psi": 0.2613,
-      "ks_stat": 0.1378,
-      "ks_pvalue": 0.336105,
+      "psi": 0.3655,
+      "ks_stat": 0.1579,
+      "ks_pvalue": 0.175776,
       "drifted": false
     }
   },
   "n_features": 14,
   "n_drifted": 1,
   "drifted_share": 0.0714,
-  "max_psi": 0.5004,
+  "max_psi": 0.5023,
   "drift_detected": false,
-  "n_reference": 175,
-  "n_current": 59,
+  "n_reference": 202,
+  "n_current": 60,
   "thresholds": {
     "psi": 0.2,
     "ks_alpha": 0.01,

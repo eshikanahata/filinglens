@@ -3,7 +3,7 @@
 # installing those pins keeps training and serving environments identical.
 # If pip cannot resolve them, build with the Python version of your training venv:
 #   docker compose build --build-arg PYTHON_VERSION=3.13 model-server
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.14
 FROM python:${PYTHON_VERSION}-slim
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /srv

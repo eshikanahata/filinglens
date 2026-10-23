@@ -2,7 +2,9 @@
 
 Idempotent: files already on disk are skipped, so a re-run after a crash
 continues where it stopped. Every filing gets a row in data/raw/manifest.csv,
-including failures, so nothing disappears silently.
+including failures, and so does every ticker with no filings in the window,
+so nothing disappears silently. Older filings beyond EDGAR's `recent` block are
+fetched from the extra submissions pages.
 """
 import csv
 import json
@@ -69,12 +71,17 @@ def main() -> None:
             continue
         try:
             subs = client.get_submissions(cik)
-            filings = select_filings(
-                subs, ticker, cik, cfg["form_type"], cfg["start_date"], cfg["end_date"]
-            )
+            pages = client.get_older_pages(subs, cfg["start_date"])
+            filings = select_filings(subs, ticker, cik, cfg["form_type"], cfg["start_date"], cfg["end_date"], pages)
         except EdgarError as exc:
             logger.error("%s: submissions lookup failed: %s", ticker, exc)
             rows.append({"ticker": ticker, "cik": cik, "status": "failed", "error": str(exc)})
+            continue
+        if not filings:
+            # Recorded in the manifest so the ticker cannot disappear silently
+            logger.warning("%s: no %s filings in window", ticker, cfg["form_type"])
+            rows.append({"ticker": ticker, "cik": cik, "status": "no_filings",
+                         "error": f"no {cfg['form_type']} in window"})
             continue
         logger.info("%s: %d filing(s) in window", ticker, len(filings))
 
@@ -104,16 +111,22 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(rows)
 
-    ok = sum(r["status"] in ("downloaded", "skipped_existing") for r in rows)
+    # Tickers with no filings are reported separately: they are not failed downloads
+    no_filings = [r["ticker"] for r in rows if r["status"] == "no_filings"]
+    filing_rows = [r for r in rows if r["status"] != "no_filings"]
+    ok = sum(r["status"] in ("downloaded", "skipped_existing") for r in filing_rows)
     metrics = {
         "tickers": len(tickers),
-        "filings_total": len(rows),
+        "tickers_without_filings": len(no_filings),
+        "filings_total": len(filing_rows),
         "filings_ok": ok,
-        "filings_failed": len(rows) - ok,
+        "filings_failed": len(filing_rows) - ok,
         "elapsed_seconds": round(time.time() - started, 1),
     }
     METRICS.parent.mkdir(parents=True, exist_ok=True)
     METRICS.write_text(json.dumps(metrics, indent=2))
+    if no_filings:
+        logger.warning("Tickers with no filings in window: %s", ", ".join(no_filings))
     logger.info("Done: %s", metrics)
 
 

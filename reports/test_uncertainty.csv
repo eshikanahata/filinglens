@@ -1,4 +1,4 @@
 model,n,auc,auc_ci_low,auc_ci_high,accuracy,acc_ci_low,acc_ci_high,auc_ci_includes_0.5
-logistic_regression,57,0.43,0.282,0.585,0.474,0.351,0.596,True
-majority_baseline,57,0.5,0.5,0.5,0.509,0.368,0.632,True
-xgboost,57,0.482,0.326,0.641,0.509,0.368,0.632,True
+logistic_regression,58,0.444,0.301,0.599,0.517,0.396,0.638,True
+majority_baseline,58,0.5,0.5,0.5,0.517,0.397,0.655,True
+xgboost,58,0.502,0.353,0.658,0.552,0.414,0.672,True

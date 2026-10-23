@@ -44,7 +44,7 @@ NFLX
 CMCSA
 T
 VZ
-XOM
+# XOM - excluded: no fillings
 CVX
 CAT
 DE
