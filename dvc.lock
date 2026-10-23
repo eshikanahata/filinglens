@@ -378,9 +378,9 @@ stages:
       nfiles: 6
     - path: src
       hash: md5
-      md5: e496ef6ab0fa313ef8db4c23ed628061.dir
-      size: 286738
-      nfiles: 65
+      md5: af1f5c777e28d5556906183ba84f38d4.dir
+      size: 275866
+      nfiles: 64
     - path: tests
       hash: md5
       md5: b58e996e71b101200921a0177ec2500d.dir

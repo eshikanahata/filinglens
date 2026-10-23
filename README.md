@@ -78,6 +78,30 @@ Stop everything with `docker compose down`.
 **After changing application code**, rebuild: `docker compose up -d --build backend frontend`. Recreating a
 container restarts the same image and does not pick up code changes.
 
+## Reproducing and tracing a result
+
+Everything is rebuilt from a fresh clone with:
+
+```bash
+dvc pull            # data, features and the exported model from the DVC store
+dvc repro           # reruns only stages whose code, data or parameters changed (nothing, on a clean clone)
+docker compose up -d --build
+```
+
+To trace what is being served back to its origin:
+
+```bash
+cat models/champion_info.json      # registry version, MLflow run_id, git_commit, scores
+git show --stat <git_commit>       # the code that trained it
+```
+
+Open the run in MLflow (http://localhost:5000) by its `run_id` to see its parameters, metrics, data hashes and
+artifacts. The same commit and run ID are shown at the bottom of the application's history view.
+
+**Where things are stored.** Code, parameters and reports: Git. Data and models: DVC, with a local remote at
+`../../dvc_storage` (the folder `dvc_storage` next to the project folder; cloud storage is not used). Experiment
+history: `mlflow.db` and `mlartifacts/` in the project folder (not in Git; included in the submission archive).
+
 ## Everyday operations
 
 ```bash
