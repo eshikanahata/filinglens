@@ -1,10 +1,12 @@
 import pytest
 
 from src.parsing.section_extractor import (
-    SectionNotFoundError, extract_risk_section, html_to_text,
+    SectionNotFoundError,
+    extract_risk_section,
+    html_to_text,
 )
 
-BODY = "We face competition and regulatory uncertainty. " * 120   # ~5.7k chars
+BODY = "We face competition and regulatory uncertainty. " * 120  # ~5.7k chars
 
 
 def make_html(toc=True, with_section=True, cross_ref=True):
@@ -12,8 +14,11 @@ def make_html(toc=True, with_section=True, cross_ref=True):
     if toc:
         parts.append("<p>Item 1A. Risk Factors 12</p><p>Item 1B. Unresolved Staff Comments 30</p>")
     if cross_ref:
-        parts.append("<p>Our business is described below. See Item 1A. Risk Factors for more. "
-                     + "Business overview text. " * 200 + "</p>")
+        parts.append(
+            "<p>Our business is described below. See Item 1A. Risk Factors for more. "
+            + "Business overview text. " * 200
+            + "</p>"
+        )
     if with_section:
         parts.append(f"<h2>Item&nbsp;1A.&nbsp;Risk Factors</h2><p>{BODY}</p>")
     parts.append("<h2>Item 1B. Unresolved Staff Comments</h2><p>None.</p>")
@@ -48,8 +53,11 @@ def test_ix_header_removed():
 
 
 def test_heading_split_across_inline_tags():
-    html = (b"<html><body><p>Item 1A. Risk Factors 5</p><p>Item 1B. Unresolved Staff Comments 9</p>"
-            b"<h2>ITEM 1A. RIS<span>K</span> FACTORS</h2><p>" + BODY.encode() +
-            b"</p><h2>ITEM 1B. UNRESOLVED STAFF COMMENTS</h2></body></html>")
+    html = (
+        b"<html><body><p>Item 1A. Risk Factors 5</p><p>Item 1B. Unresolved Staff Comments 9</p>"
+        b"<h2>ITEM 1A. RIS<span>K</span> FACTORS</h2><p>"
+        + BODY.encode()
+        + b"</p><h2>ITEM 1B. UNRESOLVED STAFF COMMENTS</h2></body></html>"
+    )
     section = extract_risk_section(html_to_text(html), min_chars=3000)
     assert "competition and regulatory uncertainty" in section

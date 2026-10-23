@@ -1,7 +1,11 @@
 import pytest
 
 from src.features.text_metrics import (
-    count_syllables, lm_ratios, load_lm_dictionary, readability, tokenize,
+    count_syllables,
+    lm_ratios,
+    load_lm_dictionary,
+    readability,
+    tokenize,
 )
 
 LM = {"neg": {"LOSS", "DECLINE"}, "pos": {"GAIN"}, "unc": {"MAY"}, "lit": {"LAWSUIT"}}
@@ -31,8 +35,10 @@ def test_syllables():
 
 def test_readability_harder_text_scores_higher():
     easy = "We sell food. We have cats. It is fun."
-    hard = ("Notwithstanding considerable macroeconomic uncertainty, "
-            "organizational restructuring necessitates substantial capitalization.")
+    hard = (
+        "Notwithstanding considerable macroeconomic uncertainty, "
+        "organizational restructuring necessitates substantial capitalization."
+    )
     r_easy = readability(easy, tokenize(easy))
     r_hard = readability(hard, tokenize(hard))
     assert r_hard["fk_grade"] > r_easy["fk_grade"]
@@ -40,8 +46,10 @@ def test_readability_harder_text_scores_higher():
 
 def test_load_lm_dictionary(tmp_path):
     p = tmp_path / "lm.csv"
-    p.write_text("Word,Negative,Positive,Uncertainty,Litigious\n"
-                 "LOSS,2009,0,0,0\nGAIN,0,2009,0,0\nMAY,0,0,2009,0\nSUE,0,0,0,2009\nTHE,0,0,0,0\n")
+    p.write_text(
+        "Word,Negative,Positive,Uncertainty,Litigious\n"
+        "LOSS,2009,0,0,0\nGAIN,0,2009,0,0\nMAY,0,0,2009,0\nSUE,0,0,0,2009\nTHE,0,0,0,0\n"
+    )
     lm = load_lm_dictionary(str(p))
     assert lm["neg"] == {"LOSS"} and lm["pos"] == {"GAIN"}
     assert lm["unc"] == {"MAY"} and lm["lit"] == {"SUE"}

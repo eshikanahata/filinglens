@@ -1,4 +1,3 @@
-import json
 import math
 
 import pytest
@@ -37,7 +36,7 @@ class FakeRegistry:
     def set_champion(self, version):
         self.champion = str(version)
 
-    def on_train(self):                       # called by FakeRunner hook below
+    def on_train(self):  # called by FakeRunner hook below
         nxt = str(max(int(v) for v in self.cv) + 1)
         self.cv[nxt] = self.new_cv
         self.champion = nxt
@@ -57,17 +56,23 @@ class TrainingRunner(FakeRunner):
 def run(registry, drift=1, force=False, simulate=False, tolerance=0.01):
     events = []
     runner = TrainingRunner(registry)
-    out = orchestrate(runner, registry, tolerance, force, simulate,
-                      read_metrics=lambda: {"drift_detected": drift},
-                      log=lambda event, status="ok", **d: events.append((event, status, d)) or d)
+    out = orchestrate(
+        runner,
+        registry,
+        tolerance,
+        force,
+        simulate,
+        read_metrics=lambda: {"drift_detected": drift},
+        log=lambda event, status="ok", **d: events.append((event, status, d)) or d,
+    )
     return out, runner, events
 
 
 def test_decide_promotion_rules():
     assert decide_promotion(0.52, 0.55, 0.01) == "promote"
-    assert decide_promotion(0.52, 0.515, 0.01) == "promote"        # within tolerance
+    assert decide_promotion(0.52, 0.515, 0.01) == "promote"  # within tolerance
     assert decide_promotion(0.52, 0.45, 0.01) == "rollback"
-    assert decide_promotion(None, 0.50, 0.01) == "promote"         # nothing to compare with
+    assert decide_promotion(None, 0.50, 0.01) == "promote"  # nothing to compare with
     assert decide_promotion(0.52, None, 0.01) == "rollback"
     assert decide_promotion(0.52, math.nan, 0.01) == "rollback"
 
@@ -136,18 +141,18 @@ def test_real_mlflow_registry_champion_alias_and_rollback(tmp_path):
     exp = client.create_experiment("t", artifact_location=(tmp_path / "art").resolve().as_uri())
     X = pd.DataFrame(np.random.default_rng(0).normal(size=(40, 2)), columns=["a", "b"])
     model = LogisticRegression().fit(X, (X["a"] > 0).astype(int))
-    for cv in (0.52, 0.40):                                   # version 1 (good), version 2 (worse)
+    for cv in (0.52, 0.40):  # version 1 (good), version 2 (worse)
         with mlflow.start_run(experiment_id=exp):
             mlflow.log_metric("cv_roc_auc", cv)
             info = mlflow.sklearn.log_model(model, name="model", serialization_format="cloudpickle")
         mv = mlflow.register_model(info.model_uri, "m")
-        client.set_registered_model_alias("m", "champion", mv.version)   # training moves the alias
+        client.set_registered_model_alias("m", "champion", mv.version)  # training moves the alias
 
     reg = MlflowRegistry(uri, "m")
     assert reg.champion_version() == "2" and reg.latest_version() == "2"
     assert reg.cv_auc("1") == pytest.approx(0.52) and reg.cv_auc("2") == pytest.approx(0.40)
     assert decide_promotion(reg.cv_auc("1"), reg.cv_auc("2"), 0.01) == "rollback"
-    reg.set_champion("1")                                     # the rollback itself
+    reg.set_champion("1")  # the rollback itself
     assert reg.champion_version() == "1"
     assert MlflowRegistry(uri, "never-registered").champion_version() is None
     mlflow.set_tracking_uri("")

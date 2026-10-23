@@ -43,7 +43,7 @@ Prerequisites: Python 3.12 or newer, Docker with the Compose plugin, git, DVC (i
 
 ```bash
 python -m venv aiopsvenv && source aiopsvenv/bin/activate
-pip install -r requirements-dev.txt
+pip install -r requirements.lock
 
 cp .env.example .env          # then set EDGAR_USER_AGENT to your name and a real contact address (SEC rule)
 

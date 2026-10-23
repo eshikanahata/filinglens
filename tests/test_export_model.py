@@ -20,8 +20,9 @@ def test_export_champion_is_portable_and_serves_probabilities(tmp_path):
     y = (X["a"] > 0).astype(int)
     model = LogisticRegression().fit(X, y)
     with mlflow.start_run(experiment_id=exp):
-        info = mlflow.sklearn.log_model(model, name="model", serialization_format="cloudpickle",
-                                        pyfunc_predict_fn="predict_proba")
+        info = mlflow.sklearn.log_model(
+            model, name="model", serialization_format="cloudpickle", pyfunc_predict_fn="predict_proba"
+        )
     mv = mlflow.register_model(info.model_uri, "m")
     client.set_registered_model_alias("m", "champion", mv.version)
 
@@ -29,17 +30,20 @@ def test_export_champion_is_portable_and_serves_probabilities(tmp_path):
     version = export_champion(uri, "m", "champion", dst)
     assert version == str(mv.version) and (dst / "MLmodel").exists()
 
-    loaded = mlflow.pyfunc.load_model(str(dst))            # loads from the copy, not the registry
+    loaded = mlflow.pyfunc.load_model(str(dst))  # loads from the copy, not the registry
     out = np.asarray(loaded.predict(X.head(5)))
-    assert out.shape == (5, 2)                             # class probabilities, not labels
+    assert out.shape == (5, 2)  # class probabilities, not labels
     assert np.allclose(out.sum(axis=1), 1.0)
     mlflow.set_tracking_uri("")
 
 
 def test_build_info():
-    info = build_info("4", "champion", {"registered_model": "m", "champion_model": "xgboost",
-                                        "champion_run_id": "r1", "git_commit": "abc"},
-                      {"champion_test_roc_auc": 0.48, "champion_cv_roc_auc": 0.52})
+    info = build_info(
+        "4",
+        "champion",
+        {"registered_model": "m", "champion_model": "xgboost", "champion_run_id": "r1", "git_commit": "abc"},
+        {"champion_test_roc_auc": 0.48, "champion_cv_roc_auc": 0.52},
+    )
     assert info["version"] == "4" and info["champion_model"] == "xgboost"
     assert info["test_roc_auc"] == 0.48
     json.dumps(info)

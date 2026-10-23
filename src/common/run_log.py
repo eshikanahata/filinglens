@@ -4,6 +4,7 @@ Stage reports are overwritten on every run, so they cannot show history. This lo
 one JSON line per notable event (drift check, retraining, promotion, rollback) for the
 console page and for Prometheus.
 """
+
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,8 +14,12 @@ HISTORY = Path("reports/run_history.jsonl")
 
 
 def log_event(event: str, status: str = "ok", path: Path = HISTORY, **details: Any) -> Dict[str, Any]:
-    record = {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-              "event": event, "status": status, **details}
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "event": event,
+        "status": status,
+        **details,
+    }
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "a", encoding="utf-8") as fh:

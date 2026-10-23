@@ -5,6 +5,7 @@ inside a Docker container. Exporting once gives the model-server container a
 self-contained folder (models/champion) plus a small info file for the backend.
 Rollback = move the `champion` alias in the registry, then rerun this stage.
 """
+
 import json
 import logging
 import shutil
@@ -39,8 +40,11 @@ def export_champion(tracking_uri: str, name: str, alias: str, dst: Path) -> str:
 
 def build_info(version: str, alias: str, train_run: Dict, train_metrics: Dict) -> Dict:
     return {
-        "registered_model": train_run.get("registered_model"), "alias": alias, "version": version,
-        "champion_model": train_run.get("champion_model"), "run_id": train_run.get("champion_run_id"),
+        "registered_model": train_run.get("registered_model"),
+        "alias": alias,
+        "version": version,
+        "champion_model": train_run.get("champion_model"),
+        "run_id": train_run.get("champion_run_id"),
         "git_commit": train_run.get("git_commit"),
         "test_roc_auc": train_metrics.get("champion_test_roc_auc"),
         "cv_roc_auc": train_metrics.get("champion_cv_roc_auc"),
@@ -55,9 +59,12 @@ def main() -> None:
     train_run = json.loads((REPORTS / "train_run.json").read_text())
     train_metrics = json.loads((REPORTS / "train_metrics.json").read_text())
     if str(train_run.get("registered_version")) != version:
-        logger.warning("Registry %s points to v%s but last training registered v%s "
-                       "(alias was moved, e.g. a rollback)", alias, version,
-                       train_run.get("registered_version"))
+        logger.warning(
+            "Registry %s points to v%s but last training registered v%s " "(alias was moved, e.g. a rollback)",
+            alias,
+            version,
+            train_run.get("registered_version"),
+        )
     INFO.write_text(json.dumps(build_info(version, alias, train_run, train_metrics), indent=2))
     logger.info("Exported %s v%s to %s", cfg["registered_model_name"], version, DST)
 

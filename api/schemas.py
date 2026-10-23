@@ -1,4 +1,5 @@
 """Pydantic request/response models: the API contract documented in the LLD."""
+
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
@@ -11,16 +12,16 @@ class FilingRef(BaseModel):
 
 
 class Signal(BaseModel):
-    label: str                       # Elevated | Moderate | Lower | Not enough data
-    score: Optional[float] = None    # estimated probability of underperforming the market
+    label: str  # Elevated | Moderate | Lower | Not enough data
+    score: Optional[float] = None  # estimated probability of underperforming the market
     elevated_threshold: float
     low_threshold: float
 
 
 class Changes(BaseModel):
-    risk_section_change_pct: Optional[float] = None   # e.g. 0.18 = +18% words vs last year
-    text_similarity: Optional[float] = None           # 0..1, TF-IDF cosine vs last year
-    negative_tone_change: Optional[float] = None      # change in share of negative words
+    risk_section_change_pct: Optional[float] = None  # e.g. 0.18 = +18% words vs last year
+    text_similarity: Optional[float] = None  # 0..1, TF-IDF cosine vs last year
+    negative_tone_change: Optional[float] = None  # change in share of negative words
     uncertainty_change: Optional[float] = None
     litigious_change: Optional[float] = None
     readability_grade_change: Optional[float] = None  # Flesch-Kincaid grade-level change
@@ -72,7 +73,7 @@ class HistoryResponse(BaseModel):
 
 class StageStatus(BaseModel):
     name: str
-    status: str                      # ok | warning | missing
+    status: str  # ok | warning | missing
     updated_at: Optional[str] = None
     metrics: Dict[str, Any] = {}
 
@@ -89,8 +90,8 @@ class PipelineResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    status: str                      # ok | degraded
-    model_server: str                # up | down
+    status: str  # ok | degraded
+    model_server: str  # up | down
     filings_loaded: int
     companies: int
 

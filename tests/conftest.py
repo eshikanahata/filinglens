@@ -1,4 +1,5 @@
 """Shared pytest fixtures."""
+
 import pytest
 
 # Set by `mlflow run`; tests use their own temporary tracking stores, so these must not leak in.

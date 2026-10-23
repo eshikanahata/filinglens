@@ -6,6 +6,7 @@ including failures, and so does every ticker with no filings in the window,
 so nothing disappears silently. Older filings beyond EDGAR's `recent` block are
 fetched from the extra submissions pages.
 """
+
 import csv
 import json
 import logging
@@ -28,8 +29,16 @@ RAW_DIR = Path("data/raw")
 MANIFEST = RAW_DIR / "manifest.csv"
 METRICS = Path("reports/download_metrics.json")
 FIELDS = [
-    "ticker", "cik", "accession", "form", "filing_date", "report_date",
-    "primary_document", "path", "status", "error",
+    "ticker",
+    "cik",
+    "accession",
+    "form",
+    "filing_date",
+    "report_date",
+    "primary_document",
+    "path",
+    "status",
+    "error",
 ]
 
 
@@ -80,18 +89,25 @@ def main() -> None:
         if not filings:
             # Recorded in the manifest so the ticker cannot disappear silently
             logger.warning("%s: no %s filings in window", ticker, cfg["form_type"])
-            rows.append({"ticker": ticker, "cik": cik, "status": "no_filings",
-                         "error": f"no {cfg['form_type']} in window"})
+            rows.append(
+                {"ticker": ticker, "cik": cik, "status": "no_filings", "error": f"no {cfg['form_type']} in window"}
+            )
             continue
         logger.info("%s: %d filing(s) in window", ticker, len(filings))
 
         for f in filings:
             path = RAW_DIR / ticker / f"{f.accession}.htm"
             row = {
-                "ticker": ticker, "cik": cik, "accession": f.accession, "form": f.form,
-                "filing_date": f.filing_date, "report_date": f.report_date,
-                "primary_document": f.primary_document, "path": str(path),
-                "status": "", "error": "",
+                "ticker": ticker,
+                "cik": cik,
+                "accession": f.accession,
+                "form": f.form,
+                "filing_date": f.filing_date,
+                "report_date": f.report_date,
+                "primary_document": f.primary_document,
+                "path": str(path),
+                "status": "",
+                "error": "",
             }
             if path.exists():
                 row["status"] = "skipped_existing"

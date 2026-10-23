@@ -1,14 +1,20 @@
 """Read pipeline reports (written by the DVC stages) for the console and Prometheus."""
+
 import csv
 import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-STAGES = [("download", "download_metrics.json"), ("parse", "parse_metrics.json"),
-          ("prices", "prices_metrics.json"), ("labels", "labels_metrics.json"),
-          ("features", "features_metrics.json"), ("train", "train_metrics.json"),
-          ("drift", "drift_metrics.json")]
+STAGES = [
+    ("download", "download_metrics.json"),
+    ("parse", "parse_metrics.json"),
+    ("prices", "prices_metrics.json"),
+    ("labels", "labels_metrics.json"),
+    ("features", "features_metrics.json"),
+    ("train", "train_metrics.json"),
+    ("drift", "drift_metrics.json"),
+]
 PARSE_SUCCESS_TARGET = 0.95
 
 
@@ -69,8 +75,9 @@ def collect(reports_dir: str) -> Dict[str, Any]:
     stages = []
     for name, fname in STAGES:
         m = read_json(base / fname)
-        stages.append({"name": name, "status": stage_state(name, m),
-                       "updated_at": _mtime(base / fname), "metrics": m or {}})
+        stages.append(
+            {"name": name, "status": stage_state(name, m), "updated_at": _mtime(base / fname), "metrics": m or {}}
+        )
     return {
         "stages": stages,
         "model_comparison": read_csv(base / "model_comparison.csv"),

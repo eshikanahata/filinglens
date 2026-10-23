@@ -3,7 +3,12 @@ import requests
 
 from frontend import api_client
 from frontend.formatting import (
-    fmt_grade, fmt_pct, fmt_points, grafana_panel_url, signal_markdown, similarity_caption,
+    fmt_grade,
+    fmt_pct,
+    fmt_points,
+    grafana_panel_url,
+    signal_markdown,
+    similarity_caption,
 )
 
 

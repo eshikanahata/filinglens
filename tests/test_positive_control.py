@@ -3,6 +3,7 @@
 A weak result on real filings is only informative if this passes, i.e. the model
 code is capable of recovering signal when it is there.
 """
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -11,9 +12,11 @@ from src.features.columns import FEATURE_COLUMNS
 from src.training.evaluate_uncertainty import bootstrap_ci
 from src.training.train import build_models, evaluate, time_cv_auc
 
-CFG = {"random_state": 0, "logreg": {"C": 1.0},
-       "xgboost": {"n_estimators": 80, "max_depth": 2, "learning_rate": 0.1,
-                   "subsample": 0.9, "colsample_bytree": 0.9}}
+CFG = {
+    "random_state": 0,
+    "logreg": {"C": 1.0},
+    "xgboost": {"n_estimators": 80, "max_depth": 2, "learning_rate": 0.1, "subsample": 0.9, "colsample_bytree": 0.9},
+}
 
 
 def planted_signal(n=400, seed=3):

@@ -5,6 +5,7 @@ NOT select or tune anything; it only quantifies how uncertain the test numbers a
 Caveat: resampling filings assumes they are independent. Filings from the same
 period share market conditions, so these intervals are, if anything, too narrow.
 """
+
 import logging
 from pathlib import Path
 from typing import Dict
@@ -19,8 +20,7 @@ logger = logging.getLogger(__name__)
 REPORTS = Path("reports")
 
 
-def bootstrap_ci(y_true, proba, n_boot: int = 2000, seed: int = 42,
-                 threshold: float = 0.5) -> Dict[str, float]:
+def bootstrap_ci(y_true, proba, n_boot: int = 2000, seed: int = 42, threshold: float = 0.5) -> Dict[str, float]:
     """Point estimates and 95% percentile intervals for AUC and accuracy."""
     y, p = np.asarray(y_true), np.asarray(proba)
     rng = np.random.default_rng(seed)
@@ -35,9 +35,12 @@ def bootstrap_ci(y_true, proba, n_boot: int = 2000, seed: int = 42,
     acc_lo, acc_hi = np.percentile(accs, [2.5, 97.5])
     return {
         "n": len(y),
-        "auc": roc_auc_score(y, p), "auc_ci_low": auc_lo, "auc_ci_high": auc_hi,
+        "auc": roc_auc_score(y, p),
+        "auc_ci_low": auc_lo,
+        "auc_ci_high": auc_hi,
         "accuracy": accuracy_score(y, (p >= threshold).astype(int)),
-        "acc_ci_low": acc_lo, "acc_ci_high": acc_hi,
+        "acc_ci_low": acc_lo,
+        "acc_ci_high": acc_hi,
         "auc_ci_includes_0.5": bool(auc_lo <= 0.5 <= auc_hi),
     }
 

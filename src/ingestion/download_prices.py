@@ -3,6 +3,7 @@
 Downloaded once and versioned in DVC, because the free source can be flaky.
 The end date comes from params.yaml (not "today") so the stage is reproducible.
 """
+
 import json
 import logging
 import time
@@ -28,8 +29,7 @@ def read_tickers(path: str) -> List[str]:
 def validate_coverage(close: pd.DataFrame, symbols: List[str], min_rows: int = 500) -> Dict:
     """Report symbols that are missing or have suspiciously little history."""
     missing = [s for s in symbols if s not in close.columns]
-    sparse = [s for s in symbols
-              if s in close.columns and close[s].notna().sum() < min_rows]
+    sparse = [s for s in symbols if s in close.columns and close[s].notna().sum() < min_rows]
     return {"missing": missing, "sparse": sparse}
 
 
@@ -40,8 +40,9 @@ def fetch_prices(symbols: List[str], start: str, end: str, retries: int) -> pd.D
     last_error: Exception = RuntimeError("no attempt made")
     for attempt in range(1, retries + 1):
         try:
-            raw = yf.download(symbols, start=start, end=end, auto_adjust=True,
-                              progress=False, group_by="column", threads=True)
+            raw = yf.download(
+                symbols, start=start, end=end, auto_adjust=True, progress=False, group_by="column", threads=True
+            )
             close = raw["Close"]
             if close.empty:
                 raise RuntimeError("empty price frame returned")
@@ -49,8 +50,7 @@ def fetch_prices(symbols: List[str], start: str, end: str, retries: int) -> pd.D
         except Exception as exc:  # noqa: BLE001 - network errors vary widely
             last_error = exc
             wait = 5 * attempt
-            logger.warning("Price download attempt %d/%d failed: %s (retry in %ds)",
-                           attempt, retries, exc, wait)
+            logger.warning("Price download attempt %d/%d failed: %s (retry in %ds)", attempt, retries, exc, wait)
             time.sleep(wait)
     raise RuntimeError(f"price download failed after {retries} attempts: {last_error}")
 
@@ -72,8 +72,7 @@ def main() -> None:
     if bench in cov["missing"] or bench in cov["sparse"]:
         raise RuntimeError(f"benchmark {bench} has no usable prices; cannot build labels")
     if cov["missing"] or cov["sparse"]:
-        logger.warning("Missing: %s | Sparse: %s (their filings will be unlabeled)",
-                       cov["missing"], cov["sparse"])
+        logger.warning("Missing: %s | Sparse: %s (their filings will be unlabeled)", cov["missing"], cov["sparse"])
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     close.to_csv(OUT)

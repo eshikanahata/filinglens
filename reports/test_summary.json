@@ -21,12 +21,12 @@
       "skipped": 0
     },
     "test_edgar_client": {
-      "passed": 5,
+      "passed": 8,
       "failed": 0,
       "skipped": 0
     },
     "test_explain": {
-      "passed": 4,
+      "passed": 5,
       "failed": 0,
       "skipped": 0
     },
@@ -47,6 +47,11 @@
     },
     "test_frontend_app": {
       "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_git_info": {
+      "passed": 5,
       "failed": 0,
       "skipped": 0
     },
@@ -85,6 +90,11 @@
       "failed": 0,
       "skipped": 0
     },
+    "test_retrain_cli": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
     "test_section_extractor": {
       "passed": 5,
       "failed": 0,
@@ -107,9 +117,9 @@
     }
   },
   "total": {
-    "passed": 108,
+    "passed": 119,
     "failed": 0,
     "skipped": 0,
-    "total": 108
+    "total": 119
   }
 }

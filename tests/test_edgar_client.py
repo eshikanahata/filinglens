@@ -1,16 +1,30 @@
 import pytest
 
 from src.ingestion.edgar_client import (
-    EdgarClient, MissingUserAgentError, get_user_agent, select_filings,
+    EdgarClient,
+    MissingUserAgentError,
+    get_user_agent,
+    select_filings,
 )
 
-SUBS = {"filings": {"recent": {
-    "accessionNumber": ["0001-22-000001", "0001-23-000002", "0001-23-000003", "0001-20-000004", "0001-24-000005"],
-    "filingDate": ["2022-02-01", "2023-02-01", "2023-05-01", "2020-02-01", "2024-02-01"],
-    "reportDate": ["2021-12-31", "2022-12-31", "2023-03-31", "2019-12-31", "2023-12-31"],
-    "form": ["10-K", "10-K", "10-Q", "10-K", "10-K/A"],
-    "primaryDocument": ["a.htm", "b.htm", "c.htm", "d.htm", "e.htm"],
-}, "files": []}}
+SUBS = {
+    "filings": {
+        "recent": {
+            "accessionNumber": [
+                "0001-22-000001",
+                "0001-23-000002",
+                "0001-23-000003",
+                "0001-20-000004",
+                "0001-24-000005",
+            ],
+            "filingDate": ["2022-02-01", "2023-02-01", "2023-05-01", "2020-02-01", "2024-02-01"],
+            "reportDate": ["2021-12-31", "2022-12-31", "2023-03-31", "2019-12-31", "2023-12-31"],
+            "form": ["10-K", "10-K", "10-Q", "10-K", "10-K/A"],
+            "primaryDocument": ["a.htm", "b.htm", "c.htm", "d.htm", "e.htm"],
+        },
+        "files": [],
+    }
+}
 
 
 def test_select_filters_form_and_date():
@@ -29,7 +43,7 @@ def test_url_building():
 
 
 def test_user_agent_rejects_missing_and_placeholder(monkeypatch, tmp_path):
-    monkeypatch.chdir(tmp_path)                      # empty folder: no .env present
+    monkeypatch.chdir(tmp_path)  # empty folder: no .env present
     monkeypatch.delenv("EDGAR_USER_AGENT", raising=False)
     with pytest.raises(MissingUserAgentError):
         get_user_agent()
@@ -48,13 +62,18 @@ def test_user_agent_read_from_dotenv_file(monkeypatch, tmp_path):
 
 
 # EDGAR keeps only ~1,000 filings in `recent`; older ones are in extra pages
-RECENT_ONLY_2024 = {"filings": {"recent": {
-    "accessionNumber": ["0009-24-000001", "0009-24-000002"],
-    "filingDate": ["2024-02-01", "2024-03-01"],
-    "reportDate": ["2023-12-31", "2023-12-31"],
-    "form": ["10-K", "4"],
-    "primaryDocument": ["k24.htm", "f4.xml"],
-}, "files": [{"name": "CIK0000000009-submissions-001.json", "filingFrom": "2015-01-01", "filingTo": "2023-12-31"}]}}
+RECENT_ONLY_2024 = {
+    "filings": {
+        "recent": {
+            "accessionNumber": ["0009-24-000001", "0009-24-000002"],
+            "filingDate": ["2024-02-01", "2024-03-01"],
+            "reportDate": ["2023-12-31", "2023-12-31"],
+            "form": ["10-K", "4"],
+            "primaryDocument": ["k24.htm", "f4.xml"],
+        },
+        "files": [{"name": "CIK0000000009-submissions-001.json", "filingFrom": "2015-01-01", "filingTo": "2023-12-31"}],
+    }
+}
 
 OLDER_PAGE = {
     "accessionNumber": ["0009-22-000001", "0009-23-000001", "0009-24-000001", "0009-19-000001"],
@@ -77,10 +96,14 @@ def test_select_without_older_pages_misses_old_filings():
 
 def test_get_older_pages_skips_pages_before_window(monkeypatch):
     client = EdgarClient("Test User test.user@university.edu", min_interval=0)
-    subs = {"filings": {"files": [
-        {"name": "old.json", "filingTo": "2015-12-31"},
-        {"name": "new.json", "filingTo": "2023-12-31"},
-    ]}}
+    subs = {
+        "filings": {
+            "files": [
+                {"name": "old.json", "filingTo": "2015-12-31"},
+                {"name": "new.json", "filingTo": "2023-12-31"},
+            ]
+        }
+    }
     fetched = []
     monkeypatch.setattr(client, "_get_json", lambda url: fetched.append(url) or {})
     client.get_older_pages(subs, "2021-01-01")

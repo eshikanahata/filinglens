@@ -1,6 +1,5 @@
 """End-to-end smoke test of the train stage on synthetic data (uses a temp MLflow DB)."""
-import numpy as np
-import pandas as pd
+
 import pytest
 
 pytest.importorskip("mlflow")
@@ -24,11 +23,23 @@ def test_train_stage_runs_and_registers_champion(tmp_path, monkeypatch):
     params = {
         "labels": {"horizon_trading_days": 30},
         "split": {"test_start_date": "2025-07-01", "embargo_days": 45},
-        "train": {"random_state": 0, "cv_splits": 3, "logreg": {"C": 1.0},
-                  "xgboost": {"n_estimators": 20, "max_depth": 2, "learning_rate": 0.1,
-                              "subsample": 0.8, "colsample_bytree": 0.8}},
-        "mlflow": {"tracking_uri": f"sqlite:///{tmp_path}/mlflow.db",
-                   "experiment_name": "smoke", "registered_model_name": "smoke-model"},
+        "train": {
+            "random_state": 0,
+            "cv_splits": 3,
+            "logreg": {"C": 1.0},
+            "xgboost": {
+                "n_estimators": 20,
+                "max_depth": 2,
+                "learning_rate": 0.1,
+                "subsample": 0.8,
+                "colsample_bytree": 0.8,
+            },
+        },
+        "mlflow": {
+            "tracking_uri": f"sqlite:///{tmp_path}/mlflow.db",
+            "experiment_name": "smoke",
+            "registered_model_name": "smoke-model",
+        },
     }
     monkeypatch.setattr(train_mod, "load_params", lambda *a, **k: params)
     train_mod.main()

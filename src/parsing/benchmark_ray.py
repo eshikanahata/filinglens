@@ -3,6 +3,7 @@
 Writes reports/ray_benchmark.json. Run on its own (not a DVC stage) because it
 writes throwaway output to tmp_benchmark/.
 """
+
 import json
 import logging
 import shutil

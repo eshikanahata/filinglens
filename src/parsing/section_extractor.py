@@ -6,6 +6,7 @@ every end marker (Item 1B / 1C / Item 2). Each start is paired with the first
 end marker after it; spans shorter than `min_chars` (the TOC) are dropped, and
 the longest remaining span wins.
 """
+
 import re
 import warnings
 from typing import List
@@ -15,8 +16,7 @@ from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 # Many EDGAR files are XHTML; parsing them with lxml's HTML parser is fine here.
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
-_BLOCK_TAGS = ["p", "div", "br", "tr", "td", "th", "li", "h1", "h2", "h3", "h4",
-               "h5", "h6", "table"]
+_BLOCK_TAGS = ["p", "div", "br", "tr", "td", "th", "li", "h1", "h2", "h3", "h4", "h5", "h6", "table"]
 _INVISIBLE = re.compile("[\u200b\u200c\u200d\ufeff\u00ad]")
 
 # Separators allowed between "Item 1A" and "Risk Factors". Commas and quotes are
@@ -77,7 +77,5 @@ def extract_risk_section(text: str, min_chars: int = 3000) -> str:
         if len(candidate) > len(best):
             best = candidate
     if not best:
-        raise SectionNotFoundError(
-            f"no Item 1A span of at least {min_chars} characters (TOC hit only?)"
-        )
+        raise SectionNotFoundError(f"no Item 1A span of at least {min_chars} characters (TOC hit only?)")
     return best

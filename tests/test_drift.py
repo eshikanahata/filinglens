@@ -2,7 +2,6 @@ import json
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from src.drift import check_drift
 from src.drift.drift import detect_drift, psi, simulate_shift
@@ -11,8 +10,14 @@ from tests.test_dataset_split import synthetic
 
 PARAMS = {
     "split": {"test_start_date": "2025-07-01", "embargo_days": 45},
-    "drift": {"psi_threshold": 0.2, "ks_alpha": 0.01, "min_drifted_share": 0.25, "bins": 10,
-              "min_current_samples": 20, "current_start_date": None},
+    "drift": {
+        "psi_threshold": 0.2,
+        "ks_alpha": 0.01,
+        "min_drifted_share": 0.25,
+        "bins": 10,
+        "min_current_samples": 20,
+        "current_start_date": None,
+    },
 }
 
 
@@ -25,9 +30,9 @@ def test_psi_is_near_zero_for_same_distribution_and_large_for_shift():
 
 def test_psi_handles_nan_empty_and_constant_reference():
     assert np.isnan(psi([], [1.0, 2.0]))
-    assert psi([1, 2, np.nan, 3] * 5, [1, 2, 3] * 5) < 0.2        # NaNs ignored
-    assert psi([5.0] * 30, [5.0] * 30) == 0.0                      # constant, unchanged
-    assert psi([5.0] * 30, [9.0] * 30) == 1.0                      # constant reference, moved away
+    assert psi([1, 2, np.nan, 3] * 5, [1, 2, 3] * 5) < 0.2  # NaNs ignored
+    assert psi([5.0] * 30, [5.0] * 30) == 0.0  # constant, unchanged
+    assert psi([5.0] * 30, [9.0] * 30) == 1.0  # constant reference, moved away
 
 
 def frames(shift=0.0, n_ref=300, n_cur=60, seed=1):
@@ -51,14 +56,14 @@ def test_drift_detected_for_shifted_batch():
 
 def test_feature_needs_both_psi_and_ks_to_count():
     ref, cur = frames(shift=1.5)
-    strict_psi = detect_drift(ref, cur, list("abcd"), psi_threshold=50.0)       # PSI never reaches 50
-    strict_ks = detect_drift(ref, cur, list("abcd"), ks_alpha=1e-300)           # KS never that significant
+    strict_psi = detect_drift(ref, cur, list("abcd"), psi_threshold=50.0)  # PSI never reaches 50
+    strict_ks = detect_drift(ref, cur, list("abcd"), ks_alpha=1e-300)  # KS never that significant
     assert strict_psi["n_drifted"] == 0 and strict_ks["n_drifted"] == 0
 
 
 def test_share_threshold_decides_batch_level_flag():
     ref, cur = frames(shift=0.0)
-    cur["a"] = cur["a"] + 3.0                                  # only 1 of 4 features moves
+    cur["a"] = cur["a"] + 3.0  # only 1 of 4 features moves
     assert detect_drift(ref, cur, list("abcd"), min_drifted_share=0.25)["drift_detected"] is True
     assert detect_drift(ref, cur, list("abcd"), min_drifted_share=0.5)["drift_detected"] is False
 
@@ -84,12 +89,12 @@ def test_run_check_real_batch_not_drifted_but_simulated_batch_is():
     real = check_drift.run_check(feats, PARAMS)
     assert real["status"] == "ok" and real["drift_detected"] is False and real["simulated"] is False
     fake = check_drift.run_check(feats, PARAMS, simulate=True)
-    assert fake["drift_detected"] is True and fake["simulated"] is True        # acceptance criterion
+    assert fake["drift_detected"] is True and fake["simulated"] is True  # acceptance criterion
 
 
 def test_run_check_reports_insufficient_data():
     feats, _ = synthetic(n=200)
-    feats["filing_date"] = "2022-01-01"                         # nothing in the current period
+    feats["filing_date"] = "2022-01-01"  # nothing in the current period
     out = check_drift.run_check(feats, PARAMS)
     assert out["status"] == "insufficient_data" and out["drift_detected"] is False
 

@@ -1,4 +1,5 @@
 """Assemble the labelled dataset and the time-based train/test split."""
+
 from typing import Dict, Tuple
 
 import pandas as pd
@@ -7,8 +8,7 @@ KEYS = ["ticker", "accession"]
 MIN_ROWS = 20
 
 
-def build_dataset(features: pd.DataFrame, labels: pd.DataFrame,
-                  split: Dict) -> Tuple[pd.DataFrame, pd.DataFrame, Dict]:
+def build_dataset(features: pd.DataFrame, labels: pd.DataFrame, split: Dict) -> Tuple[pd.DataFrame, pd.DataFrame, Dict]:
     """Return (train, test, info).
 
     Only filings that have a prior-year filing AND a label are usable. Train =
@@ -31,16 +31,20 @@ def build_dataset(features: pd.DataFrame, labels: pd.DataFrame,
 
     for name, part in (("train", train), ("test", test)):
         if len(part) < MIN_ROWS:
-            raise ValueError(f"{name} set has only {len(part)} rows (need >= {MIN_ROWS}); "
-                             "check split dates in params.yaml")
+            raise ValueError(
+                f"{name} set has only {len(part)} rows (need >= {MIN_ROWS}); " "check split dates in params.yaml"
+            )
         if part["target"].nunique() < 2:
             raise ValueError(f"{name} set contains a single class; cannot evaluate")
 
     info = {
         "n_total_filings": int(len(features)),
         "n_eligible": int(len(eligible)),
-        "n_train": int(len(train)), "n_test": int(len(test)), "n_embargoed": embargoed,
-        "train_end": str(train_end.date()), "test_start": str(test_start.date()),
+        "n_train": int(len(train)),
+        "n_test": int(len(test)),
+        "n_embargoed": embargoed,
+        "train_end": str(train_end.date()),
+        "test_start": str(test_start.date()),
         "train_positive_rate": float(train["target"].mean()),
         "test_positive_rate": float(test["target"].mean()),
     }

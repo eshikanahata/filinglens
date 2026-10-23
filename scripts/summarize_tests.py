@@ -4,6 +4,7 @@
     python scripts/summarize_tests.py
 Writes reports/test_summary.json and reports/test_summary.md and prints the table.
 """
+
 import json
 import sys
 import xml.etree.ElementTree as ET
@@ -16,7 +17,11 @@ XML = Path("reports/pytest_results.xml")
 def summarise(xml_path: Path):
     modules = defaultdict(lambda: {"passed": 0, "failed": 0, "skipped": 0})
     for case in ET.parse(xml_path).getroot().iter("testcase"):
-        module = case.get("classname", "?").split(".")[-1] if "." in case.get("classname", "") else case.get("classname", "?")
+        module = (
+            case.get("classname", "?").split(".")[-1]
+            if "." in case.get("classname", "")
+            else case.get("classname", "?")
+        )
         if case.find("failure") is not None or case.find("error") is not None:
             modules[module]["failed"] += 1
         elif case.find("skipped") is not None:
@@ -35,7 +40,9 @@ def main() -> int:
     total["total"] = sum(total.values())
     lines = ["| Test module | Passed | Failed | Skipped |", "|---|---|---|---|"]
     lines += [f"| {name} | {m['passed']} | {m['failed']} | {m['skipped']} |" for name, m in mods.items()]
-    lines.append(f"| **Total ({total['total']})** | **{total['passed']}** | **{total['failed']}** | **{total['skipped']}** |")
+    lines.append(
+        f"| **Total ({total['total']})** | **{total['passed']}** | **{total['failed']}** | **{total['skipped']}** |"
+    )
     table = "\n".join(lines)
     Path("reports/test_summary.md").write_text(table + "\n")
     Path("reports/test_summary.json").write_text(json.dumps({"modules": mods, "total": total}, indent=2))

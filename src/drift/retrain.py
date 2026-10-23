@@ -7,6 +7,7 @@ Every step is appended to reports/run_history.jsonl so the console shows what ha
 The previous model version always stays in the registry, so rollback is just moving the
 `champion` alias back.
 """
+
 import argparse
 import json
 import logging
@@ -14,7 +15,7 @@ import math
 import subprocess
 import sys
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, Optional
 
 from mlflow.tracking import MlflowClient
 import mlflow
@@ -72,9 +73,15 @@ def read_drift_metrics(path: Path = DRIFT_METRICS) -> Dict:
     return json.loads(Path(path).read_text())
 
 
-def orchestrate(runner, registry, tolerance: float, force: bool = False, simulate_shift: bool = False,
-                read_metrics: Callable[[], Dict] = read_drift_metrics,
-                log: Callable[..., Dict] = log_event) -> Dict:
+def orchestrate(
+    runner,
+    registry,
+    tolerance: float,
+    force: bool = False,
+    simulate_shift: bool = False,
+    read_metrics: Callable[[], Dict] = read_drift_metrics,
+    log: Callable[..., Dict] = log_event,
+) -> Dict:
     """Run one monitor-and-maybe-retrain cycle. Returns a summary of what happened."""
     if simulate_shift:
         runner.python_module("src.drift.check_drift", "--simulate-shift")
@@ -97,18 +104,38 @@ def orchestrate(runner, registry, tolerance: float, force: bool = False, simulat
 
     if decision == "rollback" and previous:
         registry.set_champion(previous)
-        log("model_rollback", "warning", rejected_version=new_version, restored_version=previous,
-            prev_cv_auc=prev_cv, new_cv_auc=new_cv)
+        log(
+            "model_rollback",
+            "warning",
+            rejected_version=new_version,
+            restored_version=previous,
+            prev_cv_auc=prev_cv,
+            new_cv_auc=new_cv,
+        )
     else:
-        log("model_promoted", "ok", version=new_version, previous_version=previous,
-            prev_cv_auc=prev_cv, new_cv_auc=new_cv)
+        log(
+            "model_promoted",
+            "ok",
+            version=new_version,
+            previous_version=previous,
+            prev_cv_auc=prev_cv,
+            new_cv_auc=new_cv,
+        )
 
     runner.dvc("repro", "-f", "-s", "export_model")
     serving = registry.champion_version()
     log("model_exported", "ok", version=serving)
-    return {"drift_detected": drifted, "retrained": True, "reason": reason, "decision": decision,
-            "previous_version": previous, "new_version": new_version, "serving_version": serving,
-            "prev_cv_auc": prev_cv, "new_cv_auc": new_cv}
+    return {
+        "drift_detected": drifted,
+        "retrained": True,
+        "reason": reason,
+        "decision": decision,
+        "previous_version": previous,
+        "new_version": new_version,
+        "serving_version": serving,
+        "prev_cv_auc": prev_cv,
+        "new_cv_auc": new_cv,
+    }
 
 
 def main() -> None:
@@ -116,9 +143,12 @@ def main() -> None:
     cli = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     cli.add_argument("--force", action="store_true", help="retrain even without drift")
     cli.add_argument("--simulate-shift", action="store_true", help="demo: shift the current batch first")
-    cli.add_argument("--tolerance", type=float, default=None,
-                     help="override retrain.promotion_tolerance (demo: -1 makes every new model look worse, "
-                          "forcing a rollback)")
+    cli.add_argument(
+        "--tolerance",
+        type=float,
+        default=None,
+        help="override retrain.promotion_tolerance (demo: -1 makes every new model look worse, " "forcing a rollback)",
+    )
     args = cli.parse_args()
 
     params = load_params()

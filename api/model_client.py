@@ -1,4 +1,5 @@
 """Client for the MLflow model server (the only thing the backend knows about the model)."""
+
 import logging
 from typing import List, Optional, Sequence
 
@@ -36,9 +37,7 @@ class ModelServerClient:
         try:
             probs = [float(p[1]) for p in preds]
         except (TypeError, IndexError, ValueError) as exc:
-            raise ModelServerError(
-                "model server returned class labels, expected class probabilities"
-            ) from exc
-        if len(probs) != len(rows):          # never pair scores with the wrong filings
+            raise ModelServerError("model server returned class labels, expected class probabilities") from exc
+        if len(probs) != len(rows):  # never pair scores with the wrong filings
             raise ModelServerError(f"expected {len(rows)} predictions, got {len(probs)}")
         return probs

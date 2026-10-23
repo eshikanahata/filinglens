@@ -3,6 +3,7 @@
 Each statement compares this filing with the rest of the dataset using percentiles,
 so "unusual" means "unusual relative to other filings here", not an absolute rule.
 """
+
 from typing import Dict, List, Optional
 
 HIGH, LOW = 80.0, 20.0
@@ -40,8 +41,11 @@ def build_reasons(feats: Dict[str, Optional[float]], pcts: Dict[str, Optional[fl
     sim = feats.get("tfidf_similarity")
     if sim is not None:
         add("tfidf_similarity", f"The risk-factors wording is {sim:.0%} similar to last year")
-    for key, label in (("d_neg_ratio", "negative-tone"), ("d_unc_ratio", "uncertainty"),
-                       ("d_lit_ratio", "litigation-related")):
+    for key, label in (
+        ("d_neg_ratio", "negative-tone"),
+        ("d_unc_ratio", "uncertainty"),
+        ("d_lit_ratio", "litigation-related"),
+    ):
         d = feats.get(key)
         if d is not None:
             verb = "rose" if d >= 0 else "fell"
@@ -53,5 +57,7 @@ def build_reasons(feats: Dict[str, Optional[float]], pcts: Dict[str, Optional[fl
 
     candidates.sort(key=lambda c: c[0], reverse=True)
     reasons = [text for _, text in candidates[:MAX_REASONS]]
-    return reasons or ["Nothing stands out: this filing changed no more than is typical "
-                       "compared with other filings in this dataset."]
+    return reasons or [
+        "Nothing stands out: this filing changed no more than is typical "
+        "compared with other filings in this dataset."
+    ]

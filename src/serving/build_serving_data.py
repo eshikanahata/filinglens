@@ -5,6 +5,7 @@ each year-over-year change relative to the dataset, and the terms whose TF-IDF w
 rose or fell most versus the prior year. Percentiles are descriptive only and are not
 used for modelling, so there is no leakage concern.
 """
+
 import json
 import logging
 from pathlib import Path
@@ -24,8 +25,14 @@ logger = logging.getLogger(__name__)
 FEATURES = Path("data/features/features.csv")
 VECTORIZER = Path("data/features/tfidf_vectorizer.joblib")
 OUT = Path("data/serving/filings.json")
-PERCENTILE_COLUMNS = ["risk_words_change", "tfidf_similarity", "d_neg_ratio", "d_unc_ratio",
-                      "d_lit_ratio", "d_fk_grade"]
+PERCENTILE_COLUMNS = [
+    "risk_words_change",
+    "tfidf_similarity",
+    "d_neg_ratio",
+    "d_unc_ratio",
+    "d_lit_ratio",
+    "d_fk_grade",
+]
 TOP_TERMS = 8
 
 
@@ -55,8 +62,9 @@ def main() -> None:
     feats = pd.read_csv(FEATURES, parse_dates=["filing_date"])
     vec = joblib.load(VECTORIZER)
     records = load_records()
-    paired = pair_prior_filings(records[["ticker", "accession", "filing_date"]],
-                                fcfg["min_prior_gap_days"], fcfg["max_prior_gap_days"])
+    paired = pair_prior_filings(
+        records[["ticker", "accession", "filing_date"]], fcfg["min_prior_gap_days"], fcfg["max_prior_gap_days"]
+    )
     prior_of = dict(zip(paired["accession"], paired["prior_accession"]))
     texts = dict(zip(records["accession"], records["risk_factors"]))
     names = vec.get_feature_names_out()
@@ -68,13 +76,18 @@ def main() -> None:
         prior = prior_of.get(acc)
         prior = prior if isinstance(prior, str) else None
         entry = {
-            "ticker": row["ticker"], "accession": acc,
-            "filing_date": row["filing_date"].date().isoformat(), "report_date": row["report_date"],
-            "has_prior": bool(row["has_prior"]), "prior_accession": prior,
+            "ticker": row["ticker"],
+            "accession": acc,
+            "filing_date": row["filing_date"].date().isoformat(),
+            "report_date": row["report_date"],
+            "has_prior": bool(row["has_prior"]),
+            "prior_accession": prior,
             "features": {c: _clean(float(row[c])) for c in FEATURE_COLUMNS},
-            "percentiles": ({c: _clean(float(pct.loc[idx, c])) for c in PERCENTILE_COLUMNS}
-                            if idx in pct.index else {}),
-            "new_terms": [], "dropped_terms": [],
+            "percentiles": (
+                {c: _clean(float(pct.loc[idx, c])) for c in PERCENTILE_COLUMNS} if idx in pct.index else {}
+            ),
+            "new_terms": [],
+            "dropped_terms": [],
         }
         if prior and prior in texts and acc in texts:
             m = vec.transform([texts[acc], texts[prior]]).toarray()

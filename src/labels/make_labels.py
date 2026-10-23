@@ -8,6 +8,7 @@ Definition (no look-ahead into the features):
 Filings without `horizon` trading days of data yet stay unlabeled; they are the
 "latest filing" the application shows, never training data.
 """
+
 import json
 import logging
 from pathlib import Path
@@ -27,8 +28,16 @@ MAX_GAP_DAYS = 7  # filing date must be within a week of a trading day in the da
 
 
 def _unlabeled(reason: str) -> Dict:
-    return {"labeled": False, "base_date": "", "end_date": "", "stock_ret": None,
-            "bench_ret": None, "abnormal_ret": None, "target": None, "reason": reason}
+    return {
+        "labeled": False,
+        "base_date": "",
+        "end_date": "",
+        "stock_ret": None,
+        "bench_ret": None,
+        "abnormal_ret": None,
+        "target": None,
+        "reason": reason,
+    }
 
 
 def compute_label(stock: pd.Series, bench: pd.Series, filing_date: str, horizon: int) -> Dict:
@@ -47,10 +56,16 @@ def compute_label(stock: pd.Series, bench: pd.Series, filing_date: str, horizon:
     s_ret = px["s"].iloc[end_pos] / px["s"].iloc[pos] - 1
     b_ret = px["b"].iloc[end_pos] / px["b"].iloc[pos] - 1
     abnormal = s_ret - b_ret
-    return {"labeled": True, "base_date": str(px.index[pos].date()),
-            "end_date": str(px.index[end_pos].date()), "stock_ret": float(s_ret),
-            "bench_ret": float(b_ret), "abnormal_ret": float(abnormal),
-            "target": int(abnormal < 0), "reason": ""}
+    return {
+        "labeled": True,
+        "base_date": str(px.index[pos].date()),
+        "end_date": str(px.index[end_pos].date()),
+        "stock_ret": float(s_ret),
+        "bench_ret": float(b_ret),
+        "abnormal_ret": float(abnormal),
+        "target": int(abnormal < 0),
+        "reason": "",
+    }
 
 
 def main() -> None:
@@ -63,14 +78,16 @@ def main() -> None:
     records = load_records().drop(columns=["risk_factors"])
     rows = []
     for rec in records.itertuples(index=False):
-        base = {"ticker": rec.ticker, "accession": rec.accession,
-                "filing_date": rec.filing_date.date().isoformat(),
-                "report_date": rec.report_date}
+        base = {
+            "ticker": rec.ticker,
+            "accession": rec.accession,
+            "filing_date": rec.filing_date.date().isoformat(),
+            "report_date": rec.report_date,
+        }
         if rec.ticker not in prices.columns:
             rows.append({**base, **_unlabeled("no prices for ticker")})
             continue
-        rows.append({**base, **compute_label(prices[rec.ticker], prices[bench],
-                                             base["filing_date"], horizon)})
+        rows.append({**base, **compute_label(prices[rec.ticker], prices[bench], base["filing_date"], horizon)})
 
     labels = pd.DataFrame(rows)
     OUT.parent.mkdir(parents=True, exist_ok=True)

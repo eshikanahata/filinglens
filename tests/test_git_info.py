@@ -33,9 +33,9 @@ def test_clean_tree_is_not_dirty(repo):
 
 
 def test_outputs_deleted_by_dvc_do_not_count_as_dirty(repo):
-    (repo / "reports/train_run.json").unlink()                 # what `dvc repro` does before a stage
+    (repo / "reports/train_run.json").unlink()  # what `dvc repro` does before a stage
     (repo / "data").mkdir()
-    (repo / "data/new.csv").write_text("a\n")                  # untracked generated data
+    (repo / "data/new.csv").write_text("a\n")  # untracked generated data
     (repo / "mlflow.db").write_text("")
     assert git_info()["git_dirty"] == "False"
 
@@ -44,7 +44,7 @@ def test_modified_or_new_source_files_do_count(repo):
     (repo / "src/a.py").write_text("x = 2\n")
     assert git_info()["git_dirty"] == "True"
     git(repo, "checkout", "--", "src/a.py")
-    (repo / "src/b.py").write_text("y = 1\n")                  # untracked source file
+    (repo / "src/b.py").write_text("y = 1\n")  # untracked source file
     assert git_info()["git_dirty"] == "True"
 
 

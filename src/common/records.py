@@ -1,11 +1,11 @@
 """Load parsed filing records (output of the `parse` stage)."""
+
 import json
 from pathlib import Path
 
 import pandas as pd
 
-COLUMNS = ["ticker", "accession", "filing_date", "report_date",
-           "risk_factors", "risk_words", "full_words"]
+COLUMNS = ["ticker", "accession", "filing_date", "report_date", "risk_factors", "risk_words", "full_words"]
 
 
 def load_records(parsed_dir: str = "data/parsed") -> pd.DataFrame:

@@ -4,6 +4,7 @@ Leakage control: the TF-IDF vocabulary/IDF weights are fitted ONLY on filings
 from the training period (filing_date <= test_start - embargo). Test-period text
 never influences the representation.
 """
+
 import json
 import logging
 from pathlib import Path
@@ -18,7 +19,10 @@ from src.common.config import load_params, setup_logging
 from src.common.records import load_records
 from src.features.columns import FEATURE_COLUMNS
 from src.features.text_metrics import (
-    lm_ratios, load_lm_dictionary, readability, tokenize,
+    lm_ratios,
+    load_lm_dictionary,
+    readability,
+    tokenize,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,18 +66,28 @@ def main() -> None:
 
     train_end = pd.Timestamp(split["test_start_date"]) - pd.Timedelta(days=split["embargo_days"])
     tcfg = fcfg["tfidf"]
-    vec = TfidfVectorizer(stop_words="english", sublinear_tf=True, lowercase=True,
-                          max_features=tcfg["max_features"], min_df=tcfg["min_df"],
-                          ngram_range=tuple(tcfg["ngram_range"]))
+    vec = TfidfVectorizer(
+        stop_words="english",
+        sublinear_tf=True,
+        lowercase=True,
+        max_features=tcfg["max_features"],
+        min_df=tcfg["min_df"],
+        ngram_range=tuple(tcfg["ngram_range"]),
+    )
     fit_texts = df.loc[df["filing_date"] <= train_end, "risk_factors"]
     vec.fit(fit_texts)
-    logger.info("TF-IDF fitted on %d training-period filings (<= %s), vocab %d",
-                len(fit_texts), train_end.date(), len(vec.vocabulary_))
-    X = vec.transform(df["risk_factors"])        # rows are L2-normalised
+    logger.info(
+        "TF-IDF fitted on %d training-period filings (<= %s), vocab %d",
+        len(fit_texts),
+        train_end.date(),
+        len(vec.vocabulary_),
+    )
+    X = vec.transform(df["risk_factors"])  # rows are L2-normalised
     row_of = {acc: i for i, acc in enumerate(df["accession"])}
 
-    base = {r.accession: base_features(r.risk_factors, r.risk_words, r.full_words, lm)
-            for r in df.itertuples(index=False)}
+    base = {
+        r.accession: base_features(r.risk_factors, r.risk_words, r.full_words, lm) for r in df.itertuples(index=False)
+    }
 
     rows = []
     for i, r in enumerate(df.itertuples(index=False)):
@@ -90,9 +104,16 @@ def main() -> None:
             has_prior = True
         else:
             has_prior = False
-        rows.append({"ticker": r.ticker, "accession": r.accession,
-                     "filing_date": r.filing_date.date().isoformat(),
-                     "report_date": r.report_date, "has_prior": has_prior, **feats})
+        rows.append(
+            {
+                "ticker": r.ticker,
+                "accession": r.accession,
+                "filing_date": r.filing_date.date().isoformat(),
+                "report_date": r.report_date,
+                "has_prior": has_prior,
+                **feats,
+            }
+        )
 
     out = pd.DataFrame(rows)
     for col in FEATURE_COLUMNS:
@@ -103,9 +124,13 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out.to_csv(OUT_DIR / "features.csv", index=False)
     joblib.dump(vec, OUT_DIR / "tfidf_vectorizer.joblib")
-    metrics = {"filings": int(len(out)), "with_prior": int(out["has_prior"].sum()),
-               "tfidf_fit_filings": int(len(fit_texts)), "tfidf_vocab": len(vec.vocabulary_),
-               "train_end": str(train_end.date())}
+    metrics = {
+        "filings": int(len(out)),
+        "with_prior": int(out["has_prior"].sum()),
+        "tfidf_fit_filings": int(len(fit_texts)),
+        "tfidf_vocab": len(vec.vocabulary_),
+        "train_end": str(train_end.date()),
+    }
     METRICS.parent.mkdir(parents=True, exist_ok=True)
     METRICS.write_text(json.dumps(metrics, indent=2))
     logger.info("Done: %s", metrics)

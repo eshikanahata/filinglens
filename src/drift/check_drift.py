@@ -7,6 +7,7 @@ drift.current_start_date (default: the test start) onward.
 `--simulate-shift` deliberately shifts the current batch (demo and acceptance test); the
 report is then marked simulated. Rerun `dvc repro drift` to restore the real result.
 """
+
 import argparse
 import json
 import logging
@@ -39,19 +40,34 @@ def select_batches(features: pd.DataFrame, split: Dict, drift_cfg: Dict) -> Tupl
     return df[df["filing_date"] <= train_end], df[df["filing_date"] >= current_start]
 
 
-def run_check(features: pd.DataFrame, params: Dict, simulate: bool = False,
-              shift_sd: float = DEFAULT_SHIFT_SD) -> Dict:
+def run_check(features: pd.DataFrame, params: Dict, simulate: bool = False, shift_sd: float = DEFAULT_SHIFT_SD) -> Dict:
     cfg = params["drift"]
     reference, current = select_batches(features, params["split"], cfg)
     if len(reference) < MIN_REFERENCE or len(current) < cfg["min_current_samples"]:
-        return {"status": "insufficient_data", "drift_detected": False, "simulated": simulate,
-                "n_reference": int(len(reference)), "n_current": int(len(current)),
-                "n_features": len(FEATURE_COLUMNS), "n_drifted": 0, "drifted_share": 0.0,
-                "max_psi": 0.0, "features": {}, "thresholds": {}}
+        return {
+            "status": "insufficient_data",
+            "drift_detected": False,
+            "simulated": simulate,
+            "n_reference": int(len(reference)),
+            "n_current": int(len(current)),
+            "n_features": len(FEATURE_COLUMNS),
+            "n_drifted": 0,
+            "drifted_share": 0.0,
+            "max_psi": 0.0,
+            "features": {},
+            "thresholds": {},
+        }
     if simulate:
         current = simulate_shift(current, reference, FEATURE_COLUMNS, shift_sd)
-    report = detect_drift(reference, current, FEATURE_COLUMNS, cfg["psi_threshold"],
-                          cfg["ks_alpha"], cfg["min_drifted_share"], cfg["bins"])
+    report = detect_drift(
+        reference,
+        current,
+        FEATURE_COLUMNS,
+        cfg["psi_threshold"],
+        cfg["ks_alpha"],
+        cfg["min_drifted_share"],
+        cfg["bins"],
+    )
     report.update(status="ok", simulated=simulate)
     return report
 
@@ -59,19 +75,28 @@ def run_check(features: pd.DataFrame, params: Dict, simulate: bool = False,
 def write_reports(report: Dict, report_path: Path = REPORT, metrics_path: Path = METRICS) -> None:
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2))
-    metrics_path.write_text(json.dumps({
-        "drift_detected": int(report["drift_detected"]), "drifted_features": report["n_drifted"],
-        "drifted_share": report["drifted_share"], "max_psi": report["max_psi"],
-        "n_reference": report["n_reference"], "n_current": report["n_current"],
-        "simulated": int(report["simulated"]),
-    }, indent=2))
+    metrics_path.write_text(
+        json.dumps(
+            {
+                "drift_detected": int(report["drift_detected"]),
+                "drifted_features": report["n_drifted"],
+                "drifted_share": report["drifted_share"],
+                "max_psi": report["max_psi"],
+                "n_reference": report["n_reference"],
+                "n_current": report["n_current"],
+                "simulated": int(report["simulated"]),
+            },
+            indent=2,
+        )
+    )
 
 
 def main() -> None:
     setup_logging("drift")
     cli = argparse.ArgumentParser()
-    cli.add_argument("--simulate-shift", action="store_true",
-                     help="deliberately shift the current batch (demo / acceptance test)")
+    cli.add_argument(
+        "--simulate-shift", action="store_true", help="deliberately shift the current batch (demo / acceptance test)"
+    )
     cli.add_argument("--shift-sd", type=float, default=DEFAULT_SHIFT_SD)
     args = cli.parse_args()
 
@@ -79,12 +104,22 @@ def main() -> None:
     report = run_check(pd.read_csv(FEATURES), params, args.simulate_shift, args.shift_sd)
     write_reports(report)
     status = "drift" if report["drift_detected"] else "ok"
-    log_event("drift_check", status, drifted_features=report["n_drifted"],
-              max_psi=report["max_psi"], simulated=report["simulated"],
-              n_current=report["n_current"])
-    logger.info("Drift %s: %d/%d features drifted (max PSI %.3f, simulated=%s)",
-                "DETECTED" if report["drift_detected"] else "not detected", report["n_drifted"],
-                report["n_features"], report["max_psi"], report["simulated"])
+    log_event(
+        "drift_check",
+        status,
+        drifted_features=report["n_drifted"],
+        max_psi=report["max_psi"],
+        simulated=report["simulated"],
+        n_current=report["n_current"],
+    )
+    logger.info(
+        "Drift %s: %d/%d features drifted (max PSI %.3f, simulated=%s)",
+        "DETECTED" if report["drift_detected"] else "not detected",
+        report["n_drifted"],
+        report["n_features"],
+        report["max_psi"],
+        report["simulated"],
+    )
 
 
 if __name__ == "__main__":

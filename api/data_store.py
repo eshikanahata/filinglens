@@ -1,4 +1,5 @@
 """In-memory view of the precomputed serving data (output of the serving_data stage)."""
+
 import json
 from pathlib import Path
 from typing import Dict, List, Optional

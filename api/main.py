@@ -4,6 +4,7 @@ Loosely coupled by design: the only things this service knows about the model ar
 configurable URL and the predict_proba contract. It never imports training code.
 Start with:  uvicorn api.main:create_app --factory
 """
+
 import logging
 import time
 from pathlib import Path as FsPath
@@ -21,8 +22,18 @@ from api.metrics import Metrics
 from api.model_client import ModelServerClient, ModelServerError
 from api.pipeline_status import read_json
 from api.schemas import (
-    AnalysisResponse, Changes, ErrorResponse, FilingRef, HealthResponse, HistoryPoint,
-    HistoryResponse, ModelInfo, PipelineResponse, Signal, TickerItem, TickersResponse,
+    AnalysisResponse,
+    Changes,
+    ErrorResponse,
+    FilingRef,
+    HealthResponse,
+    HistoryPoint,
+    HistoryResponse,
+    ModelInfo,
+    PipelineResponse,
+    Signal,
+    TickerItem,
+    TickersResponse,
 )
 
 logger = logging.getLogger("filinglens.api")
@@ -36,34 +47,42 @@ class ApiError(Exception):
 
 
 def _filing_ref(f: Optional[dict]) -> Optional[FilingRef]:
-    return FilingRef(accession=f["accession"], filing_date=f["filing_date"],
-                     report_date=f.get("report_date")) if f else None
+    return (
+        FilingRef(accession=f["accession"], filing_date=f["filing_date"], report_date=f.get("report_date"))
+        if f
+        else None
+    )
 
 
 def _row(f: dict, columns) -> list:
     return [f["features"].get(c) for c in columns]
 
 
-def create_app(settings: Optional[Settings] = None,
-               model_client: Optional[ModelServerClient] = None) -> FastAPI:
+def create_app(settings: Optional[Settings] = None, model_client: Optional[ModelServerClient] = None) -> FastAPI:
     settings = settings or Settings.from_env()
     if not logging.getLogger().handlers:
-        logging.basicConfig(level=logging.INFO,
-                            format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s")
+        logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s")
     store = DataStore(settings.serving_data_path)
     model = model_client or ModelServerClient(settings.model_server_url, settings.model_timeout_seconds)
     metrics = Metrics(settings.reports_dir, settings.model_info_path)
 
-    app = FastAPI(title="FilingLens API", version="1.0.0",
-                  description="Risk-signal analysis of SEC 10-K filings. Decision support only.")
+    app = FastAPI(
+        title="FilingLens API",
+        version="1.0.0",
+        description="Risk-signal analysis of SEC 10-K filings. Decision support only.",
+    )
 
     def model_info() -> Optional[ModelInfo]:
         raw = read_json(FsPath(settings.model_info_path))
         if not raw:
             return None
-        return ModelInfo(name=str(raw.get("champion_model", "unknown")), version=str(raw.get("version", "?")),
-                         run_id=str(raw.get("run_id", "")), test_roc_auc=raw.get("test_roc_auc"),
-                         cv_roc_auc=raw.get("cv_roc_auc"))
+        return ModelInfo(
+            name=str(raw.get("champion_model", "unknown")),
+            version=str(raw.get("version", "?")),
+            run_id=str(raw.get("run_id", "")),
+            test_roc_auc=raw.get("test_roc_auc"),
+            cv_roc_auc=raw.get("cv_roc_auc"),
+        )
 
     def score_rows(rows: list) -> list:
         started = time.perf_counter()
@@ -71,8 +90,9 @@ def create_app(settings: Optional[Settings] = None,
             scores = model.predict_proba(store.feature_columns, rows)
         except ModelServerError as exc:
             metrics.model_calls.labels("error").inc()
-            raise ApiError(503, "model_unavailable",
-                           "The scoring service is temporarily unavailable. Please try again shortly.") from exc
+            raise ApiError(
+                503, "model_unavailable", "The scoring service is temporarily unavailable. Please try again shortly."
+            ) from exc
         metrics.model_calls.labels("success").inc()
         metrics.model_latency.observe(time.perf_counter() - started)
         return scores
@@ -106,8 +126,9 @@ def create_app(settings: Optional[Settings] = None,
 
     @app.exception_handler(RequestValidationError)
     async def validation_handler(_: Request, exc: RequestValidationError):
-        return error_response(400, "invalid_input",
-                              "Please enter a valid ticker symbol: letters only, for example AAPL.")
+        return error_response(
+            400, "invalid_input", "Please enter a valid ticker symbol: letters only, for example AAPL."
+        )
 
     @app.exception_handler(Exception)
     async def unexpected_handler(_: Request, exc: Exception):
@@ -117,21 +138,28 @@ def create_app(settings: Optional[Settings] = None,
     def require_ticker(ticker: str) -> str:
         t = ticker.upper()
         if not store.has(t):
-            raise ApiError(404, "unknown_ticker",
-                           f"We don't have data for '{t}'. Pick a company from the supported list.")
+            raise ApiError(
+                404, "unknown_ticker", f"We don't have data for '{t}'. Pick a company from the supported list."
+            )
         return t
 
     # ---------- endpoints ----------
     @app.get("/health", response_model=HealthResponse, tags=["system"])
     def health():
         up = model.ping()
-        return HealthResponse(status="ok" if up else "degraded", model_server="up" if up else "down",
-                              filings_loaded=store.n_filings, companies=len(store.tickers()))
+        return HealthResponse(
+            status="ok" if up else "degraded",
+            model_server="up" if up else "down",
+            filings_loaded=store.n_filings,
+            companies=len(store.tickers()),
+        )
 
     @app.get("/tickers", response_model=TickersResponse, tags=["analysis"])
     def tickers():
-        items = [TickerItem(ticker=t, n_filings=len(store.filings(t)),
-                            latest_filing_date=store.latest(t)["filing_date"]) for t in store.tickers()]
+        items = [
+            TickerItem(ticker=t, n_filings=len(store.filings(t)), latest_filing_date=store.latest(t)["filing_date"])
+            for t in store.tickers()
+        ]
         return TickersResponse(tickers=items)
 
     @app.get("/analysis/{ticker}", response_model=AnalysisResponse, responses=ERRORS, tags=["analysis"])
@@ -149,29 +177,56 @@ def create_app(settings: Optional[Settings] = None,
         if f["has_prior"]:
             reasons = explain.build_reasons(feats, pcts)
         else:
-            reasons = ["This is the earliest filing we have for this company, so there is no "
-                       "prior year to compare against."]
+            reasons = [
+                "This is the earliest filing we have for this company, so there is no " "prior year to compare against."
+            ]
         changes = Changes(
-            risk_section_change_pct=feats.get("risk_words_change"), text_similarity=feats.get("tfidf_similarity"),
-            negative_tone_change=feats.get("d_neg_ratio"), uncertainty_change=feats.get("d_unc_ratio"),
-            litigious_change=feats.get("d_lit_ratio"), readability_grade_change=feats.get("d_fk_grade"),
-            new_terms=f.get("new_terms", []), dropped_terms=f.get("dropped_terms", []))
+            risk_section_change_pct=feats.get("risk_words_change"),
+            text_similarity=feats.get("tfidf_similarity"),
+            negative_tone_change=feats.get("d_neg_ratio"),
+            uncertainty_change=feats.get("d_unc_ratio"),
+            litigious_change=feats.get("d_lit_ratio"),
+            readability_grade_change=feats.get("d_fk_grade"),
+            new_terms=f.get("new_terms", []),
+            dropped_terms=f.get("dropped_terms", []),
+        )
         return AnalysisResponse(
-            ticker=t, filing=_filing_ref(f), previous_filing=_filing_ref(prev),
-            signal=Signal(label=lbl, score=score, elevated_threshold=settings.elevated_threshold,
-                          low_threshold=settings.low_threshold),
-            reasons=reasons, changes=changes, model=model_info(), disclaimer=DISCLAIMER)
+            ticker=t,
+            filing=_filing_ref(f),
+            previous_filing=_filing_ref(prev),
+            signal=Signal(
+                label=lbl,
+                score=score,
+                elevated_threshold=settings.elevated_threshold,
+                low_threshold=settings.low_threshold,
+            ),
+            reasons=reasons,
+            changes=changes,
+            model=model_info(),
+            disclaimer=DISCLAIMER,
+        )
 
     @app.get("/analysis/{ticker}/history", response_model=HistoryResponse, responses=ERRORS, tags=["analysis"])
     def history(ticker: str = Path(..., pattern=TICKER_PATTERN)):
         t = require_ticker(ticker)
         filings = store.filings(t)
         scorable = [f for f in filings if f["has_prior"]]
-        scores = dict(zip((f["accession"] for f in scorable),
-                          score_rows([_row(f, store.feature_columns) for f in scorable]) if scorable else []))
-        points = [HistoryPoint(accession=f["accession"], filing_date=f["filing_date"],
-                               score=scores.get(f["accession"]), label=label(scores.get(f["accession"])),
-                               text_similarity=f["features"].get("tfidf_similarity")) for f in filings]
+        scores = dict(
+            zip(
+                (f["accession"] for f in scorable),
+                score_rows([_row(f, store.feature_columns) for f in scorable]) if scorable else [],
+            )
+        )
+        points = [
+            HistoryPoint(
+                accession=f["accession"],
+                filing_date=f["filing_date"],
+                score=scores.get(f["accession"]),
+                label=label(scores.get(f["accession"])),
+                text_similarity=f["features"].get("tfidf_similarity"),
+            )
+            for f in filings
+        ]
         return HistoryResponse(ticker=t, points=points)
 
     @app.get("/pipeline/runs", response_model=PipelineResponse, tags=["pipeline"])

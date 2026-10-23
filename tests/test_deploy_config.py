@@ -3,6 +3,7 @@
 Docker is not needed: these catch the usual wiring mistakes (wrong host names, a panel
 that does not exist, a dashboard querying a metric the backend never exports).
 """
+
 import json
 import re
 from pathlib import Path
@@ -29,9 +30,9 @@ def test_frontend_and_backend_are_separate_images():
 def test_loose_coupling_wiring():
     fe_env = SERVICES["frontend"]["environment"]
     be_env = SERVICES["backend"]["environment"]
-    assert fe_env["BACKEND_URL"] == "http://backend:8000"            # frontend -> backend only
-    assert "MODEL_SERVER_URL" not in fe_env                           # frontend never sees the model
-    assert be_env["MODEL_SERVER_URL"] == "http://model-server:5001"   # backend -> model via REST
+    assert fe_env["BACKEND_URL"] == "http://backend:8000"  # frontend -> backend only
+    assert "MODEL_SERVER_URL" not in fe_env  # frontend never sees the model
+    assert be_env["MODEL_SERVER_URL"] == "http://model-server:5001"  # backend -> model via REST
     assert "BACKEND_URL" not in be_env
 
 
@@ -78,17 +79,21 @@ def test_dashboard_queries_only_exported_metrics():
 
 def test_dashboard_panel_ids_unique_and_embedded_panels_exist():
     from frontend.formatting import CONSOLE_PANELS, GRAFANA_DASHBOARD_UID
+
     ids = [p["id"] for p in DASH["panels"]]
     assert len(ids) == len(set(ids))
     assert DASH["uid"] == GRAFANA_DASHBOARD_UID
     assert {panel_id for _, panel_id, _ in CONSOLE_PANELS} <= set(ids)
 
 
-@pytest.mark.parametrize("dockerfile,needle", [
-    ("docker/Dockerfile.backend", "api.main:create_app"),
-    ("docker/Dockerfile.frontend", "frontend/app.py"),
-    ("docker/Dockerfile.model", "mlflow"),
-])
+@pytest.mark.parametrize(
+    "dockerfile,needle",
+    [
+        ("docker/Dockerfile.backend", "api.main:create_app"),
+        ("docker/Dockerfile.frontend", "frontend/app.py"),
+        ("docker/Dockerfile.model", "mlflow"),
+    ],
+)
 def test_dockerfile_entrypoints(dockerfile, needle):
     assert needle in (ROOT / dockerfile).read_text()
     if "/" in needle and needle.endswith(".py"):
@@ -97,6 +102,7 @@ def test_dockerfile_entrypoints(dockerfile, needle):
 
 def test_backend_factory_is_importable():
     from api.main import create_app
+
     assert callable(create_app)
 
 

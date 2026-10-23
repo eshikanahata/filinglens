@@ -3,6 +3,7 @@
 Every failure is converted to an ApiError with a message safe to show a non-technical
 user (no stack traces, no internal URLs).
 """
+
 import os
 from typing import Any, Dict
 
@@ -25,15 +26,15 @@ def _get(path: str) -> Dict[str, Any]:
     try:
         resp = requests.get(f"{backend_url()}{path}", timeout=TIMEOUT_SECONDS)
     except requests.RequestException as exc:
-        raise ApiError("We can't reach the analysis service right now. "
-                       "Please try again in a moment.", code="unreachable") from exc
+        raise ApiError(
+            "We can't reach the analysis service right now. " "Please try again in a moment.", code="unreachable"
+        ) from exc
     if resp.status_code >= 400:
         try:
             err = resp.json()["error"]
             raise ApiError(err["message"], resp.status_code, err["code"])
         except (ValueError, KeyError, TypeError):
-            raise ApiError("The service returned an unexpected response. Please try again.",
-                           resp.status_code) from None
+            raise ApiError("The service returned an unexpected response. Please try again.", resp.status_code) from None
     try:
         return resp.json()
     except ValueError as exc:

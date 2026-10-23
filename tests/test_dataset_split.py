@@ -25,8 +25,8 @@ def synthetic(n=200, seed=0):
 
 
 def test_split_is_time_ordered_with_embargo():
-    f, l = synthetic()
-    train, test, info = build_dataset(f, l, SPLIT)
+    feats, labels = synthetic()
+    train, test, info = build_dataset(feats, labels, SPLIT)
     assert train["filing_date"].max() <= pd.Timestamp("2025-05-17")
     assert test["filing_date"].min() >= pd.Timestamp("2025-07-01")
     assert train["filing_date"].max() < test["filing_date"].min()
@@ -34,14 +34,14 @@ def test_split_is_time_ordered_with_embargo():
 
 
 def test_unlabeled_and_no_prior_rows_excluded():
-    f, l = synthetic()
-    l.loc[:30, "labeled"] = False
-    f.loc[31:50, "has_prior"] = False
-    _, _, info = build_dataset(f, l, SPLIT)
-    assert info["n_eligible"] == len(f) - 31 - 20
+    feats, labels = synthetic()
+    labels.loc[:30, "labeled"] = False
+    feats.loc[31:50, "has_prior"] = False
+    _, _, info = build_dataset(feats, labels, SPLIT)
+    assert info["n_eligible"] == len(feats) - 31 - 20
 
 
 def test_too_small_split_raises():
-    f, l = synthetic(n=40)
+    feats, labels = synthetic(n=40)
     with pytest.raises(ValueError, match="rows"):
-        build_dataset(f, l, SPLIT)
+        build_dataset(feats, labels, SPLIT)

@@ -5,6 +5,7 @@ numbers include loopback networking but no browser. Run:
     python scripts/measure_latency.py            # defaults: http://localhost:8000, 3 repeats
 Writes reports/latency_report.json. Exit code 1 if the target is missed or any request fails.
 """
+
 import argparse
 import json
 import math
@@ -36,9 +37,13 @@ def timed_get(session: requests.Session, url: str):
 
 def summarise(samples: List[float], statuses: List[int]) -> Dict:
     ms = [s * 1000 for s in samples]
-    return {"requests": len(ms), "errors": sum(1 for s in statuses if s == 0 or s >= 400),
-            "p50_ms": round(statistics.median(ms), 1), "p95_ms": round(percentile(ms, 0.95), 1),
-            "max_ms": round(max(ms), 1)}
+    return {
+        "requests": len(ms),
+        "errors": sum(1 for s in statuses if s == 0 or s >= 400),
+        "p50_ms": round(statistics.median(ms), 1),
+        "p95_ms": round(percentile(ms, 0.95), 1),
+        "max_ms": round(max(ms), 1),
+    }
 
 
 def run(base: str, repeats: int) -> Dict:
@@ -51,7 +56,7 @@ def run(base: str, repeats: int) -> Dict:
         "GET /analysis/{ticker}/history": [f"/analysis/{t}/history" for t in tickers] * repeats,
         "GET /pipeline/runs": ["/pipeline/runs"] * (repeats * 10),
     }
-    for path in ["/health", "/tickers", f"/analysis/{tickers[0]}"] * WARMUP:   # discarded warm-up
+    for path in ["/health", "/tickers", f"/analysis/{tickers[0]}"] * WARMUP:  # discarded warm-up
         timed_get(session, base + path)
     results = {}
     for name, paths in groups.items():
@@ -61,8 +66,14 @@ def run(base: str, repeats: int) -> Dict:
             samples.append(secs)
             statuses.append(status)
         results[name] = summarise(samples, statuses)
-    return {"base_url": base, "companies": len(tickers), "repeats": repeats,
-            "python": platform.python_version(), "machine": platform.platform(), "endpoints": results}
+    return {
+        "base_url": base,
+        "companies": len(tickers),
+        "repeats": repeats,
+        "python": platform.python_version(),
+        "machine": platform.platform(),
+        "endpoints": results,
+    }
 
 
 def main() -> int:
@@ -76,16 +87,19 @@ def main() -> int:
     report = run(args.base.rstrip("/"), args.repeats)
     key = report["endpoints"]["GET /analysis/{ticker}"]
     report["target_ms"] = args.target_ms
-    report["target_met"] = bool(key["p95_ms"] < args.target_ms and
-                                all(e["errors"] == 0 for e in report["endpoints"].values()))
+    report["target_met"] = bool(
+        key["p95_ms"] < args.target_ms and all(e["errors"] == 0 for e in report["endpoints"].values())
+    )
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(report, indent=2))
 
     print(f"{'Endpoint':34s}{'requests':>9s}{'errors':>8s}{'p50 ms':>9s}{'p95 ms':>9s}{'max ms':>9s}")
     for name, e in report["endpoints"].items():
         print(f"{name:34s}{e['requests']:9d}{e['errors']:8d}{e['p50_ms']:9.1f}{e['p95_ms']:9.1f}{e['max_ms']:9.1f}")
-    print(f"\nAcceptance: p95 of GET /analysis/{{ticker}} = {key['p95_ms']} ms "
-          f"(target < {args.target_ms:.0f} ms) -> {'MET' if report['target_met'] else 'NOT MET'}")
+    print(
+        f"\nAcceptance: p95 of GET /analysis/{{ticker}} = {key['p95_ms']} ms "
+        f"(target < {args.target_ms:.0f} ms) -> {'MET' if report['target_met'] else 'NOT MET'}"
+    )
     return 0 if report["target_met"] else 1
 
 

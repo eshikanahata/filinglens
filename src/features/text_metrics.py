@@ -1,4 +1,5 @@
 """Pure text-metric functions (no I/O except the dictionary loader)."""
+
 import re
 from pathlib import Path
 from typing import Dict, List, Set

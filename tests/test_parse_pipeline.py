@@ -16,8 +16,16 @@ def test_ray_parse_end_to_end(tmp_path):
         p = raw / "TST" / f"acc{i}.htm"
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(make_html() if good else b"<html><body>broken</body></html>")
-        rows.append({"ticker": "TST", "accession": f"acc{i}", "filing_date": "2023-01-01",
-                     "report_date": "2022-12-31", "path": str(p), "status": "downloaded"})
+        rows.append(
+            {
+                "ticker": "TST",
+                "accession": f"acc{i}",
+                "filing_date": "2023-01-01",
+                "report_date": "2022-12-31",
+                "path": str(p),
+                "status": "downloaded",
+            }
+        )
     manifest = tmp_path / "manifest.csv"
     with open(manifest, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=rows[0].keys())

@@ -1,4 +1,5 @@
 """Drift and events flowing through backend, Prometheus config, Grafana and the console."""
+
 import json
 import re
 from pathlib import Path
@@ -12,21 +13,34 @@ from tests.test_api import FakeModel, client, env  # noqa: F401  (env is a pytes
 from tests.test_frontend_app import APP, PIPELINE, Resp, fake_get
 
 ROOT = Path(__file__).resolve().parent.parent
-DRIFT_REPORT = {"status": "ok", "simulated": True, "drift_detected": True, "n_features": 2, "n_drifted": 2,
-                "drifted_share": 1.0, "max_psi": 0.31, "n_reference": 100, "n_current": 40,
-                "features": {"unc_ratio": {"psi": 0.31, "ks_stat": 0.4, "ks_pvalue": 0.0001, "drifted": True},
-                             "neg_ratio": {"psi": 0.05, "ks_stat": 0.1, "ks_pvalue": 0.4, "drifted": False}}}
+DRIFT_REPORT = {
+    "status": "ok",
+    "simulated": True,
+    "drift_detected": True,
+    "n_features": 2,
+    "n_drifted": 2,
+    "drifted_share": 1.0,
+    "max_psi": 0.31,
+    "n_reference": 100,
+    "n_current": 40,
+    "features": {
+        "unc_ratio": {"psi": 0.31, "ks_stat": 0.4, "ks_pvalue": 0.0001, "drifted": True},
+        "neg_ratio": {"psi": 0.05, "ks_stat": 0.1, "ks_pvalue": 0.4, "drifted": False},
+    },
+}
 
 
 @pytest.fixture
 def with_drift(env):  # noqa: F811
     reports = Path(env.reports_dir)
-    (reports / "drift_metrics.json").write_text(json.dumps(
-        {"drift_detected": 1, "drifted_features": 2, "drifted_share": 1.0, "max_psi": 0.31, "simulated": 1}))
+    (reports / "drift_metrics.json").write_text(
+        json.dumps({"drift_detected": 1, "drifted_features": 2, "drifted_share": 1.0, "max_psi": 0.31, "simulated": 1})
+    )
     (reports / "drift_report.json").write_text(json.dumps(DRIFT_REPORT))
-    events = [{"ts": f"2026-10-1{i}T10:00:00+00:00", "event": e, "status": s}
-              for i, (e, s) in enumerate([("drift_check", "drift"), ("retrain_started", "ok"),
-                                          ("model_rollback", "warning")])]
+    events = [
+        {"ts": f"2026-10-1{i}T10:00:00+00:00", "event": e, "status": s}
+        for i, (e, s) in enumerate([("drift_check", "drift"), ("retrain_started", "ok"), ("model_rollback", "warning")])
+    ]
     (reports / "run_history.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
     return env
 
@@ -102,7 +116,7 @@ def test_dvc_drift_stage_is_wired_to_params_and_metrics():
     d = stages["drift"]
     assert "drift" in d["params"] and "reports/drift_report.json" in " ".join(map(str, d["outs"]))
     assert "reports/drift_metrics.json" in " ".join(map(str, d["metrics"]))
-    assert "train" not in str(d["deps"])            # drift must not depend on (or trigger) training
+    assert "train" not in str(d["deps"])  # drift must not depend on (or trigger) training
     params = yaml.safe_load((ROOT / "params.yaml").read_text())
     assert {"psi_threshold", "ks_alpha", "min_drifted_share"} <= set(params["drift"])
     assert "promotion_tolerance" in params["retrain"]
@@ -111,9 +125,13 @@ def test_dvc_drift_stage_is_wired_to_params_and_metrics():
 # ---------- console page ----------
 def test_console_shows_drift_warning_and_events(monkeypatch):
     import streamlit as st
+
     st.cache_data.clear()
-    payload = {**PIPELINE, "drift_report": DRIFT_REPORT,
-               "events": [{"ts": "2026-10-17T10:00:00+00:00", "event": "model_rollback", "status": "warning"}]}
+    payload = {
+        **PIPELINE,
+        "drift_report": DRIFT_REPORT,
+        "events": [{"ts": "2026-10-17T10:00:00+00:00", "event": "model_rollback", "status": "warning"}],
+    }
 
     def get(url, timeout):
         return Resp(200, payload) if url.endswith("/pipeline/runs") else fake_get(url, timeout)

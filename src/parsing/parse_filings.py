@@ -3,6 +3,7 @@
 Each filing is an independent task, so the work is embarrassingly parallel.
 `run_parsing` is reused by the benchmark script to compare worker counts.
 """
+
 import argparse
 import csv
 import json
@@ -29,8 +30,12 @@ def parse_one(task: Dict[str, str]) -> Dict[str, object]:
     """Parse a single filing. Never raises: failures are returned as data."""
     started = time.time()
     result: Dict[str, object] = {
-        "ticker": task["ticker"], "accession": task["accession"],
-        "status": "failed", "error": "", "risk_words": 0, "full_words": 0,
+        "ticker": task["ticker"],
+        "accession": task["accession"],
+        "status": "failed",
+        "error": "",
+        "risk_words": 0,
+        "full_words": 0,
     }
     try:
         text = html_to_text(Path(task["path"]).read_bytes())
@@ -47,8 +52,7 @@ def parse_one(task: Dict[str, str]) -> Dict[str, object]:
         out = Path(task["out_dir"]) / task["ticker"] / f"{task['accession']}.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(record), encoding="utf-8")
-        result.update(status="ok", risk_words=record["risk_words"],
-                      full_words=record["full_words"])
+        result.update(status="ok", risk_words=record["risk_words"], full_words=record["full_words"])
     except Exception as exc:  # noqa: BLE001 - one bad filing must not stop the run
         result["error"] = f"{type(exc).__name__}: {exc}"
     result["seconds"] = round(time.time() - started, 3)
@@ -57,16 +61,14 @@ def parse_one(task: Dict[str, str]) -> Dict[str, object]:
 
 def load_tasks(manifest: Path, out_dir: Path, min_chars: int) -> List[Dict[str, str]]:
     with open(manifest, newline="", encoding="utf-8") as fh:
-        rows = [r for r in csv.DictReader(fh)
-                if r["status"] in ("downloaded", "skipped_existing")]
+        rows = [r for r in csv.DictReader(fh) if r["status"] in ("downloaded", "skipped_existing")]
     return [{**r, "out_dir": str(out_dir), "min_chars": str(min_chars)} for r in rows]
 
 
 def run_parsing(manifest: Path, out_dir: Path, workers: int, min_chars: int) -> Dict:
     """Parse every manifest entry with `workers` Ray workers; return metrics."""
     tasks = load_tasks(manifest, out_dir, min_chars)
-    ray.init(num_cpus=workers, include_dashboard=False, logging_level=logging.WARNING,
-             ignore_reinit_error=True)
+    ray.init(num_cpus=workers, include_dashboard=False, logging_level=logging.WARNING, ignore_reinit_error=True)
     started = time.time()
     try:
         results = ray.get([parse_one.remote(t) for t in tasks])
@@ -108,9 +110,14 @@ def main() -> None:
     args = cli.parse_args()
 
     metrics = run_parsing(MANIFEST, PARSED_DIR, args.workers, params["min_section_chars"])
-    logger.info("Parsed %d/%d filings (%.1f%%) in %.1fs with %d worker(s)",
-                metrics["filings_ok"], metrics["filings_total"],
-                metrics["success_rate"] * 100, metrics["elapsed_seconds"], args.workers)
+    logger.info(
+        "Parsed %d/%d filings (%.1f%%) in %.1fs with %d worker(s)",
+        metrics["filings_ok"],
+        metrics["filings_total"],
+        metrics["success_rate"] * 100,
+        metrics["elapsed_seconds"],
+        args.workers,
+    )
     if metrics["success_rate"] < 0.95:
         logger.warning("Parse success below the 95%% acceptance target; see %s", FAILURES)
     write_reports(metrics, METRICS, FAILURES)

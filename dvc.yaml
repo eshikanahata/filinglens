@@ -1,4 +1,38 @@
 stages:
+  lint:
+    cmd: >-
+      flake8 api frontend src tests scripts --output-file=reports/lint_report.txt --tee
+      && echo "flake8 passed with 0 warnings" >> reports/lint_report.txt
+    deps:
+      - api
+      - frontend
+      - src
+      - tests
+      - scripts
+      - .flake8
+    outs:
+      - reports/lint_report.txt:
+          cache: false
+
+  test:
+    cmd: pytest -q --junitxml=reports/pytest_results.xml && python scripts/summarize_tests.py
+    deps:
+      - api
+      - frontend
+      - src
+      - tests
+      - pytest.ini
+      - reports/lint_report.txt
+    outs:
+      - reports/pytest_results.xml:
+          cache: false
+      - reports/test_summary.md:
+          cache: false
+    metrics:
+      - reports/test_summary.json:
+          cache: false
+
+
   download:
     cmd: python -m src.ingestion.download_filings
     deps:
@@ -128,6 +162,7 @@ stages:
       - src/serving/export_model.py
       - reports/train_run.json
       - reports/train_metrics.json
+      - reports/test_summary.json      
     params:
       - mlflow
     outs:

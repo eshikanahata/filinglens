@@ -1,5 +1,6 @@
 """Backend configuration. Every value can be overridden by an environment variable,
 so the frontend, backend and model server stay decoupled and re-pointable."""
+
 import os
 from dataclasses import dataclass
 
@@ -11,8 +12,8 @@ class Settings:
     serving_data_path: str = "data/serving/filings.json"
     model_info_path: str = "models/champion_info.json"
     reports_dir: str = "reports"
-    elevated_threshold: float = 0.60   # score >= this  -> "Elevated"
-    low_threshold: float = 0.40        # score <= this  -> "Lower"
+    elevated_threshold: float = 0.60  # score >= this  -> "Elevated"
+    low_threshold: float = 0.40  # score <= this  -> "Lower"
 
     @classmethod
     def from_env(cls) -> "Settings":

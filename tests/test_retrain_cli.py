@@ -1,5 +1,3 @@
-import pytest
-
 from src.drift import retrain
 
 
@@ -15,9 +13,14 @@ def run_main(monkeypatch, argv, params_tolerance=0.01):
         seen.update(tolerance=tolerance, force=force, simulate=simulate)
         return {"retrained": False}
 
-    monkeypatch.setattr(retrain, "load_params", lambda *a, **k: {
-        "mlflow": {"tracking_uri": "x", "registered_model_name": "m"},
-        "retrain": {"promotion_tolerance": params_tolerance}})
+    monkeypatch.setattr(
+        retrain,
+        "load_params",
+        lambda *a, **k: {
+            "mlflow": {"tracking_uri": "x", "registered_model_name": "m"},
+            "retrain": {"promotion_tolerance": params_tolerance},
+        },
+    )
     monkeypatch.setattr(retrain, "MlflowRegistry", Dummy)
     monkeypatch.setattr(retrain, "DvcRunner", Dummy)
     monkeypatch.setattr(retrain, "orchestrate", fake_orchestrate)

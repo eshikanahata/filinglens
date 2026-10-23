@@ -1,12 +1,17 @@
 """Pure display helpers (unit-tested; no Streamlit calls)."""
+
 from typing import Optional
 
 SIGNAL_COLORS = {"Elevated": "red", "Moderate": "orange", "Lower": "green", "Not enough data": "gray"}
 STATUS_ICONS = {"ok": "✅ OK", "warning": "⚠️ Needs attention", "missing": "⛔ Not run yet"}
 GRAFANA_DASHBOARD_UID = "filinglens-main"
 # Grafana panels embedded in the console page: (grid column, panel id, title)
-CONSOLE_PANELS = [(0, 1, "Request rate"), (1, 2, "95th percentile latency"),
-                  (0, 6, "Parse success ratio"), (1, 8, "Filings by stage outcome")]
+CONSOLE_PANELS = [
+    (0, 1, "Request rate"),
+    (1, 2, "95th percentile latency"),
+    (0, 6, "Parse success ratio"),
+    (1, 8, "Filings by stage outcome"),
+]
 
 
 def signal_markdown(label: str) -> str:
@@ -39,5 +44,7 @@ def similarity_caption(sim: Optional[float]) -> str:
 
 
 def grafana_panel_url(base: str, panel_id: int) -> str:
-    return (f"{base.rstrip('/')}/d-solo/{GRAFANA_DASHBOARD_UID}/filinglens"
-            f"?orgId=1&panelId={panel_id}&theme=light&refresh=10s")
+    return (
+        f"{base.rstrip('/')}/d-solo/{GRAFANA_DASHBOARD_UID}/filinglens"
+        f"?orgId=1&panelId={panel_id}&theme=light&refresh=10s"
+    )

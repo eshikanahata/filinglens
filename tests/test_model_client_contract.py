@@ -4,14 +4,22 @@ from api.model_client import ModelServerClient, ModelServerError
 
 
 class Resp:
-    def __init__(self, payload): self.payload = payload
-    def raise_for_status(self): pass
-    def json(self): return self.payload
+    def __init__(self, payload):
+        self.payload = payload
+
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return self.payload
 
 
 class Session:
-    def __init__(self, payload): self.payload = payload
-    def post(self, *a, **k): return Resp(self.payload)
+    def __init__(self, payload):
+        self.payload = payload
+
+    def post(self, *a, **k):
+        return Resp(self.payload)
 
 
 def test_prediction_count_must_match_row_count():

@@ -40,6 +40,6 @@ def test_filing_before_price_history_is_unlabeled():
 
 def test_price_gap_is_unlabeled():
     s = make_series(n=80)
-    gap = s.drop(s.index[5:20])          # a long hole in the data
+    gap = s.drop(s.index[5:20])  # a long hole in the data
     out = compute_label(gap, gap, "2024-01-25", 10)
     assert not out["labeled"] and "gap" in out["reason"]

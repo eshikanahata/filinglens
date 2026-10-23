@@ -7,19 +7,35 @@ from api.config import Settings
 from api.main import create_app
 from api.model_client import ModelServerClient, ModelServerError
 
-COLUMNS = ["neg_ratio", "unc_ratio", "tfidf_similarity", "risk_words_change",
-           "d_neg_ratio", "d_unc_ratio", "d_lit_ratio", "d_fk_grade"]
+COLUMNS = [
+    "neg_ratio",
+    "unc_ratio",
+    "tfidf_similarity",
+    "risk_words_change",
+    "d_neg_ratio",
+    "d_unc_ratio",
+    "d_lit_ratio",
+    "d_fk_grade",
+]
 
 
 def filing(ticker, acc, date, prior=None, sim=0.8, chg=0.05):
     has_prior = prior is not None
     feats = {c: 0.01 for c in COLUMNS}
-    feats.update({"tfidf_similarity": sim if has_prior else None,
-                  "risk_words_change": chg if has_prior else None})
+    feats.update({"tfidf_similarity": sim if has_prior else None, "risk_words_change": chg if has_prior else None})
     pcts = {"tfidf_similarity": 10.0, "risk_words_change": 90.0} if has_prior else {}
-    return {"ticker": ticker, "accession": acc, "filing_date": date, "report_date": date,
-            "has_prior": has_prior, "prior_accession": prior, "features": feats,
-            "percentiles": pcts, "new_terms": ["supply chain"], "dropped_terms": ["covid"]}
+    return {
+        "ticker": ticker,
+        "accession": acc,
+        "filing_date": date,
+        "report_date": date,
+        "has_prior": has_prior,
+        "prior_accession": prior,
+        "features": feats,
+        "percentiles": pcts,
+        "new_terms": ["supply chain"],
+        "dropped_terms": ["covid"],
+    }
 
 
 class FakeModel:
@@ -38,21 +54,36 @@ class FakeModel:
 
 @pytest.fixture
 def env(tmp_path):
-    filings = [filing("AAA", "a1", "2023-02-01"),
-               filing("AAA", "a2", "2024-02-01", prior="a1"),
-               filing("AAA", "a3", "2025-02-01", prior="a2"),
-               filing("BBB", "b1", "2025-03-01")]
+    filings = [
+        filing("AAA", "a1", "2023-02-01"),
+        filing("AAA", "a2", "2024-02-01", prior="a1"),
+        filing("AAA", "a3", "2025-02-01", prior="a2"),
+        filing("BBB", "b1", "2025-03-01"),
+    ]
     (tmp_path / "serving.json").write_text(json.dumps({"feature_columns": COLUMNS, "filings": filings}))
-    (tmp_path / "info.json").write_text(json.dumps({"champion_model": "xgboost", "version": "3",
-                                                    "run_id": "abc", "test_roc_auc": 0.48}))
+    (tmp_path / "info.json").write_text(
+        json.dumps({"champion_model": "xgboost", "version": "3", "run_id": "abc", "test_roc_auc": 0.48})
+    )
     reports = tmp_path / "reports"
     reports.mkdir()
-    (reports / "parse_metrics.json").write_text(json.dumps(
-        {"workers": 4, "filings_total": 10, "filings_ok": 9, "filings_failed": 1,
-         "success_rate": 0.9, "filings_per_minute": 300.0}))
+    (reports / "parse_metrics.json").write_text(
+        json.dumps(
+            {
+                "workers": 4,
+                "filings_total": 10,
+                "filings_ok": 9,
+                "filings_failed": 1,
+                "success_rate": 0.9,
+                "filings_per_minute": 300.0,
+            }
+        )
+    )
     (reports / "ray_benchmark.json").write_text(json.dumps([{"workers": 1, "speedup_vs_1_worker": 1.0}]))
-    return Settings(serving_data_path=str(tmp_path / "serving.json"),
-                    model_info_path=str(tmp_path / "info.json"), reports_dir=str(reports))
+    return Settings(
+        serving_data_path=str(tmp_path / "serving.json"),
+        model_info_path=str(tmp_path / "info.json"),
+        reports_dir=str(reports),
+    )
 
 
 def client(env, model=None):
@@ -77,13 +108,12 @@ def test_tickers(env):
 
 def test_analysis_scored(env):
     c, model = client(env, FakeModel([0.72]))
-    r = c.get("/analysis/aaa")                      # lower-case input is accepted
+    r = c.get("/analysis/aaa")  # lower-case input is accepted
     assert r.status_code == 200
     body = r.json()
     assert body["ticker"] == "AAA" and body["filing"]["accession"] == "a3"
     assert body["previous_filing"]["accession"] == "a2"
-    assert body["signal"] == {"label": "Elevated", "score": 0.72, "elevated_threshold": 0.6,
-                              "low_threshold": 0.4}
+    assert body["signal"] == {"label": "Elevated", "score": 0.72, "elevated_threshold": 0.6, "low_threshold": 0.4}
     assert body["changes"]["new_terms"] == ["supply chain"]
     assert body["model"]["version"] == "3" and "decision support" in body["disclaimer"]
     assert len(body["reasons"]) >= 1
@@ -95,7 +125,7 @@ def test_analysis_without_prior_year_is_not_scored(env):
     body = c.get("/analysis/BBB").json()
     assert body["signal"]["label"] == "Not enough data" and body["signal"]["score"] is None
     assert "earliest filing" in body["reasons"][0]
-    assert model.calls == []                         # model is not called when there is nothing to score
+    assert model.calls == []  # model is not called when there is nothing to score
 
 
 def test_unknown_and_invalid_ticker(env):
@@ -121,14 +151,14 @@ def test_history_batches_one_model_call(env):
     assert [p["accession"] for p in pts] == ["a1", "a2", "a3"]
     assert pts[0]["score"] is None and pts[0]["label"] == "Not enough data"
     assert pts[1]["label"] == "Lower" and pts[2]["label"] == "Elevated"
-    assert model.calls == [(COLUMNS, 2)]             # a single batched request
+    assert model.calls == [(COLUMNS, 2)]  # a single batched request
 
 
 def test_pipeline_endpoint(env):
     c, _ = client(env)
     body = c.get("/pipeline/runs").json()
     stages = {s["name"]: s for s in body["stages"]}
-    assert stages["parse"]["status"] == "warning"    # 90% < 95% target
+    assert stages["parse"]["status"] == "warning"  # 90% < 95% target
     assert stages["train"]["status"] == "missing"
     assert body["ray_benchmark"][0]["workers"] == 1
     assert body["champion"]["name"] == "xgboost"
@@ -156,13 +186,21 @@ def test_missing_serving_data_fails_fast(tmp_path):
 
 def test_model_client_parses_probabilities_and_rejects_labels():
     class Resp:
-        def __init__(self, payload): self.payload = payload
-        def raise_for_status(self): pass
-        def json(self): return self.payload
+        def __init__(self, payload):
+            self.payload = payload
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return self.payload
 
     class Session:
-        def __init__(self, payload): self.payload = payload
-        def post(self, *a, **k): return Resp(self.payload)
+        def __init__(self, payload):
+            self.payload = payload
+
+        def post(self, *a, **k):
+            return Resp(self.payload)
 
     ok = ModelServerClient("http://x", session=Session({"predictions": [[0.3, 0.7], [0.9, 0.1]]}))
     assert ok.predict_proba(["a"], [[1], [2]]) == [0.7, 0.1]

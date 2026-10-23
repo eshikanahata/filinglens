@@ -1,6 +1,7 @@
 """Diagnose why Item 1A extraction fails for one filing.
 Usage: PYTHONPATH=. python scripts/diagnose_filing.py MSFT 0000950170-23-035122
 """
+
 import re
 import sys
 from pathlib import Path
@@ -9,8 +10,7 @@ from bs4 import BeautifulSoup
 
 from src.parsing.section_extractor import END_RES, START_RE, html_to_text
 
-BLOCK = ["p", "div", "br", "tr", "td", "th", "li", "h1", "h2", "h3", "h4",
-         "h5", "h6", "table"]
+BLOCK = ["p", "div", "br", "tr", "td", "th", "li", "h1", "h2", "h3", "h4", "h5", "h6", "table"]
 
 
 def html_to_text_blockaware(html: bytes) -> str:
@@ -30,7 +30,7 @@ def show(label, pattern, text, limit=10):
     print(f"  {label}: {len(hits)} hit(s)")
     for m in hits[:limit]:
         p = m.start()
-        ctx = text[max(0, p - 50):p + 70]
+        ctx = text[max(0, p - 50) : p + 70]
         print(f"    @{p:>8,} ({p / len(text):5.1%})  {ctx!r}")
 
 

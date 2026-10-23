@@ -1,4 +1,5 @@
 """FilingLens web interface (Streamlit). Talks only to the backend REST API."""
+
 import os
 
 import pandas as pd
@@ -7,7 +8,13 @@ import streamlit.components.v1 as components
 
 from frontend import api_client
 from frontend.formatting import (
-    CONSOLE_PANELS, STATUS_ICONS, fmt_grade, fmt_pct, fmt_points, grafana_panel_url, signal_markdown,
+    CONSOLE_PANELS,
+    STATUS_ICONS,
+    fmt_grade,
+    fmt_pct,
+    fmt_points,
+    grafana_panel_url,
+    signal_markdown,
     similarity_caption,
 )
 
@@ -33,8 +40,7 @@ def page_analysis() -> None:
         return
 
     labels = {f"{t['ticker']}  (latest filing {t['latest_filing_date']})": t["ticker"] for t in tickers}
-    choice = st.selectbox("Choose a company (type to search)", list(labels), index=None,
-                          placeholder="e.g. AAPL")
+    choice = st.selectbox("Choose a company (type to search)", list(labels), index=None, placeholder="e.g. AAPL")
     if choice is None:
         st.info("Pick a company above to see how its latest annual report differs from last year's.")
         return
@@ -51,9 +57,13 @@ def page_analysis() -> None:
     c1.markdown("**Risk signal**")
     c1.markdown(f"## {signal_markdown(signal['label'])}")
     if signal["score"] is not None:
-        c2.metric("Chance of underperforming", fmt_pct(signal["score"]),
-                  help="Estimated chance of doing worse than the market over roughly the 6 weeks after filing. Model accuracy could not be "
-                       "distinguished from chance, so treat this as one input among many.")
+        c2.metric(
+            "Chance of underperforming",
+            fmt_pct(signal["score"]),
+            help="Estimated chance of doing worse than the market over roughly the 6 weeks after filing. "
+            "Model accuracy could not be "
+            "distinguished from chance, so treat this as one input among many.",
+        )
         c2.progress(float(signal["score"]))
     else:
         c2.metric("Chance of underperforming", "n/a")
@@ -91,9 +101,18 @@ def page_analysis() -> None:
             scored = df.dropna(subset=["score"])
             if len(scored) >= 2:
                 st.line_chart(scored.set_index("filing_date")["score"], y_label="Estimated chance")
-            st.dataframe(df[["filing_date", "label", "score", "text_similarity"]].rename(columns={
-                "filing_date": "Filing date", "label": "Signal", "score": "Score",
-                "text_similarity": "Similarity to prior year"}), hide_index=True, use_container_width=True)
+            st.dataframe(
+                df[["filing_date", "label", "score", "text_similarity"]].rename(
+                    columns={
+                        "filing_date": "Filing date",
+                        "label": "Signal",
+                        "score": "Score",
+                        "text_similarity": "Similarity to prior year",
+                    }
+                ),
+                hide_index=True,
+                use_container_width=True,
+            )
         except api_client.ApiError as exc:
             st.warning(exc.message)
 
@@ -116,16 +135,30 @@ def page_console() -> None:
     parse = stages.get("parse", {}).get("metrics", {})
     champ = data.get("champion") or {}
     a, b, c, d = st.columns(4)
-    a.metric("Parse success rate", fmt_pct(parse.get("success_rate"), 1) if parse else "n/a",
-             help="Acceptance target: at least 95%.")
+    a.metric(
+        "Parse success rate",
+        fmt_pct(parse.get("success_rate"), 1) if parse else "n/a",
+        help="Acceptance target: at least 95%.",
+    )
     b.metric("Parse throughput", f"{parse.get('filings_per_minute', 'n/a')} filings/min")
     c.metric("Failed filings", data["parse_failure_count"])
     d.metric("Serving model", f"{champ.get('name', 'n/a')} v{champ.get('version', '?')}")
 
     st.subheader("Pipeline stages")
-    st.dataframe(pd.DataFrame([{"Stage": s["name"], "Status": STATUS_ICONS.get(s["status"], s["status"]),
-                                "Last updated": s["updated_at"] or "n/a"} for s in data["stages"]]),
-                 hide_index=True, use_container_width=True)
+    st.dataframe(
+        pd.DataFrame(
+            [
+                {
+                    "Stage": s["name"],
+                    "Status": STATUS_ICONS.get(s["status"], s["status"]),
+                    "Last updated": s["updated_at"] or "n/a",
+                }
+                for s in data["stages"]
+            ]
+        ),
+        hide_index=True,
+        use_container_width=True,
+    )
 
     drift = data.get("drift_report")
     if drift and drift.get("status") == "ok":
@@ -135,12 +168,15 @@ def page_console() -> None:
         y.metric("Drifted features", f"{drift['n_drifted']} of {drift['n_features']}")
         z.metric("Largest PSI", drift["max_psi"], help="Below 0.1 is stable; 0.2 or more is a significant shift.")
         if drift.get("simulated"):
-            st.warning("This report uses a deliberately shifted batch (demo). Run the drift check "
-                       "again without the simulation flag to restore the real result.")
-        rows = [{"Feature": k, "PSI": v["psi"], "KS p-value": v["ks_pvalue"],
-                 "Drifted": "yes" if v["drifted"] else "no"} for k, v in drift["features"].items()]
-        st.dataframe(pd.DataFrame(rows).sort_values("PSI", ascending=False), hide_index=True,
-                     use_container_width=True)
+            st.warning(
+                "This report uses a deliberately shifted batch (demo). Run the drift check "
+                "again without the simulation flag to restore the real result."
+            )
+        rows = [
+            {"Feature": k, "PSI": v["psi"], "KS p-value": v["ks_pvalue"], "Drifted": "yes" if v["drifted"] else "no"}
+            for k, v in drift["features"].items()
+        ]
+        st.dataframe(pd.DataFrame(rows).sort_values("PSI", ascending=False), hide_index=True, use_container_width=True)
     elif drift:
         st.subheader("Data drift")
         st.info("Not enough recent filings yet to run a reliable drift check.")
@@ -169,8 +205,10 @@ def page_console() -> None:
         with columns[col_idx]:
             st.markdown(f"**{title}**")
             components.iframe(grafana_panel_url(GRAFANA_URL, panel_id), height=220)
-    st.markdown(f"Full tools: [Grafana]({GRAFANA_URL}) · [MLflow experiments]({MLFLOW_UI_URL}) · "
-                f"[Prometheus]({PROMETHEUS_URL})")
+    st.markdown(
+        f"Full tools: [Grafana]({GRAFANA_URL}) · [MLflow experiments]({MLFLOW_UI_URL}) · "
+        f"[Prometheus]({PROMETHEUS_URL})"
+    )
 
 
 def page_help() -> None:

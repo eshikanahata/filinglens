@@ -5,6 +5,7 @@ SEC rules this client respects:
   * at most 10 requests/second (we default to 5);
   * transient failures (429/5xx) are retried with backoff.
 """
+
 import logging
 import os
 import threading
@@ -53,8 +54,7 @@ def get_user_agent() -> str:
     ua = os.environ.get("EDGAR_USER_AGENT", "").strip().strip('"')
     if not ua or "@" not in ua or "example.com" in ua or "your.real.email" in ua:
         raise MissingUserAgentError(
-            "Set EDGAR_USER_AGENT to 'Your Name your.email@domain' (SEC requires a "
-            "real contact). See .env.example."
+            "Set EDGAR_USER_AGENT to 'Your Name your.email@domain' (SEC requires a " "real contact). See .env.example."
         )
     return ua
 
@@ -81,10 +81,10 @@ class FilingRef:
 
     ticker: str
     cik: int
-    accession: str          # with dashes, e.g. 0000320193-23-000106
+    accession: str  # with dashes, e.g. 0000320193-23-000106
     form: str
-    filing_date: str        # ISO yyyy-mm-dd
-    report_date: str        # fiscal period end
+    filing_date: str  # ISO yyyy-mm-dd
+    report_date: str  # fiscal period end
     primary_document: str
 
     @property
@@ -130,9 +130,7 @@ class EdgarClient:
         self.timeout = timeout
         self.limiter = RateLimiter(min_interval)
         self.session = requests.Session()
-        self.session.headers.update(
-            {"User-Agent": user_agent, "Accept-Encoding": "gzip, deflate"}
-        )
+        self.session.headers.update({"User-Agent": user_agent, "Accept-Encoding": "gzip, deflate"})
         retry = Retry(
             total=5,
             backoff_factor=1.0,

@@ -9,12 +9,12 @@ stages:
       size: 516
     - path: src/ingestion/download_filings.py
       hash: md5
-      md5: eebd3d55c9523ebbd6b1ec878825ba0e
-      size: 5211
+      md5: 29c3a1847dd5f6343cdae91ace13e49f
+      size: 5345
     - path: src/ingestion/edgar_client.py
       hash: md5
-      md5: 7b9503a861e53bd3a7b006769d9dde92
-      size: 6358
+      md5: e270de33b1d41953ff7f61b982eb809c
+      size: 6305
     params:
       params.yaml:
         data:
@@ -31,7 +31,7 @@ stages:
       nfiles: 319
     - path: reports/download_metrics.json
       hash: md5
-      md5: dc0b787872517907875a19a1e8853379
+      md5: 88fa4001690d3036eb09c81bcb64d3c0
       size: 147
   parse:
     cmd: python -m src.parsing.parse_filings
@@ -43,8 +43,8 @@ stages:
       nfiles: 319
     - path: src/parsing
       hash: md5
-      md5: 0522a4bd3cc7f59091f6fac1c27f9c0e.dir
-      size: 26373
+      md5: 39067cdd2b5ccaba372b1d817f61e772.dir
+      size: 26314
       nfiles: 8
     params:
       params.yaml:
@@ -59,7 +59,7 @@ stages:
       nfiles: 318
     - path: reports/parse_metrics.json
       hash: md5
-      md5: 64fd1f32a4a53c960e4d4f85582bb8f2
+      md5: 0e248d593ce53eeabf36c07eb757ae9c
       size: 168
   prices:
     cmd: python -m src.ingestion.download_prices
@@ -70,8 +70,8 @@ stages:
       size: 516
     - path: src/ingestion/download_prices.py
       hash: md5
-      md5: 4b0c658fe31fd8d203bd5088f56be0cc
-      size: 3704
+      md5: 911a26537db2f2e42b98e09ecba6bf19
+      size: 3641
     params:
       params.yaml:
         prices:
@@ -82,8 +82,8 @@ stages:
     outs:
     - path: data/prices
       hash: md5
-      md5: d25ef696d6a5289ab81f61e5c66744d9.dir
-      size: 1488795
+      md5: 93cbab541d7f3dc82d80cd51105ded3e.dir
+      size: 1489358
       nfiles: 1
     - path: reports/prices_metrics.json
       hash: md5
@@ -99,18 +99,18 @@ stages:
       nfiles: 318
     - path: data/prices
       hash: md5
-      md5: d25ef696d6a5289ab81f61e5c66744d9.dir
-      size: 1488795
+      md5: 93cbab541d7f3dc82d80cd51105ded3e.dir
+      size: 1489358
       nfiles: 1
     - path: src/common
       hash: md5
-      md5: 2f367215b1fa4acd4afe0bf883969182.dir
-      size: 10296
+      md5: 548389e6c9569f7c0979d1851ecc6c73.dir
+      size: 10316
       nfiles: 8
     - path: src/labels
       hash: md5
-      md5: 819b30ab4b963fff53f724c1e10d302f.dir
-      size: 11125
+      md5: f2be11cccd31fc0ce74d4d869feb2518.dir
+      size: 11193
       nfiles: 4
     params:
       params.yaml:
@@ -119,8 +119,8 @@ stages:
     outs:
     - path: data/labels
       hash: md5
-      md5: 852e9688c82532d353a266de3177a74c.dir
-      size: 44981
+      md5: fa9fd776b091f9992a0a17e4401252f8.dir
+      size: 44941
       nfiles: 1
     - path: reports/labels_metrics.json
       hash: md5
@@ -140,13 +140,13 @@ stages:
       nfiles: 318
     - path: src/common
       hash: md5
-      md5: 2f367215b1fa4acd4afe0bf883969182.dir
-      size: 10296
+      md5: 548389e6c9569f7c0979d1851ecc6c73.dir
+      size: 10316
       nfiles: 8
     - path: src/features
       hash: md5
-      md5: 3b4061202251059f632994c41f8d90e3.dir
-      size: 23575
+      md5: 0d5c2820b704e71018a237ab9c9afa66.dir
+      size: 23707
       nfiles: 8
     params:
       params.yaml:
@@ -166,7 +166,7 @@ stages:
     outs:
     - path: data/features
       hash: md5
-      md5: 0cebb4a3c0d1f0fc4ab714b06d728429.dir
+      md5: 119404848953dd89e096b90393b63da8.dir
       size: 309092
       nfiles: 2
     - path: reports/features_metrics.json
@@ -178,22 +178,22 @@ stages:
     deps:
     - path: data/features
       hash: md5
-      md5: 0cebb4a3c0d1f0fc4ab714b06d728429.dir
+      md5: 119404848953dd89e096b90393b63da8.dir
       size: 309092
       nfiles: 2
     - path: data/labels
       hash: md5
-      md5: 852e9688c82532d353a266de3177a74c.dir
-      size: 44981
+      md5: fa9fd776b091f9992a0a17e4401252f8.dir
+      size: 44941
       nfiles: 1
     - path: src/features/columns.py
       hash: md5
-      md5: fa5a9e3ae0d13389422b869e7f0e63be
-      size: 502
+      md5: 5480d4a171d5d59d8b104e8244d68757
+      size: 478
     - path: src/training
       hash: md5
-      md5: 91c65dd135d76f1226836a03944fba9a.dir
-      size: 54313
+      md5: 9c77fee44a07a36d73905c83d947d36e.dir
+      size: 54468
       nfiles: 9
     params:
       params.yaml:
@@ -220,7 +220,7 @@ stages:
     outs:
     - path: reports/model_comparison.csv
       hash: md5
-      md5: 8a44220ec5014737014a52c37f8ae350
+      md5: 1819c3ead800420537c7f45bbb478eae
       size: 690
     - path: reports/train_metrics.json
       hash: md5
@@ -228,14 +228,14 @@ stages:
       size: 207
     - path: reports/train_run.json
       hash: md5
-      md5: d8b5048e4665b8500ac4e4d2bedf431e
+      md5: e4b74cbd4f24b61ba7c1a9865a5d3f0f
       size: 432
   serving_data:
     cmd: python -m src.serving.build_serving_data
     deps:
     - path: data/features
       hash: md5
-      md5: 0cebb4a3c0d1f0fc4ab714b06d728429.dir
+      md5: 119404848953dd89e096b90393b63da8.dir
       size: 309092
       nfiles: 2
     - path: data/parsed
@@ -245,18 +245,18 @@ stages:
       nfiles: 318
     - path: src/common
       hash: md5
-      md5: 2f367215b1fa4acd4afe0bf883969182.dir
-      size: 10296
+      md5: 548389e6c9569f7c0979d1851ecc6c73.dir
+      size: 10316
       nfiles: 8
     - path: src/features
       hash: md5
-      md5: 3b4061202251059f632994c41f8d90e3.dir
-      size: 23575
+      md5: 0d5c2820b704e71018a237ab9c9afa66.dir
+      size: 23707
       nfiles: 8
     - path: src/serving/build_serving_data.py
       hash: md5
-      md5: 75f5707809036d49df4e1c01e5615b5f
-      size: 3742
+      md5: 377c19c3fc64e3e4d41f2e573019c5d9
+      size: 3780
     params:
       params.yaml:
         features:
@@ -278,18 +278,22 @@ stages:
   export_model:
     cmd: python -m src.serving.export_model
     deps:
+    - path: reports/test_summary.json
+      hash: md5
+      md5: c25482aedcd45e6bc87a646886d4e64e
+      size: 2199
     - path: reports/train_metrics.json
       hash: md5
       md5: 502c45b3eec0b3e9b5fa97b2bb1dfa9b
       size: 207
     - path: reports/train_run.json
       hash: md5
-      md5: d8b5048e4665b8500ac4e4d2bedf431e
+      md5: e4b74cbd4f24b61ba7c1a9865a5d3f0f
       size: 432
     - path: src/serving/export_model.py
       hash: md5
-      md5: 9448dc8fc43420f48ff252cd1b1515be
-      size: 2733
+      md5: 309d3a95e33475fc3335955623033513
+      size: 2771
     params:
       params.yaml:
         mlflow:
@@ -299,34 +303,34 @@ stages:
     outs:
     - path: models/champion
       hash: md5
-      md5: ec1a7fb98409d7dedffdc6da194744b9.dir
+      md5: 736c1f6511cb1191d59afbd09f87f23b.dir
       size: 7373
       nfiles: 8
     - path: models/champion_info.json
       hash: md5
-      md5: 4e99c79fe9e6b08f7449685032b4008b
+      md5: cbd069d2ffe28c1181a8033e2539dde6
       size: 285
   drift:
     cmd: python -m src.drift.check_drift
     deps:
     - path: data/features
       hash: md5
-      md5: 0cebb4a3c0d1f0fc4ab714b06d728429.dir
+      md5: 119404848953dd89e096b90393b63da8.dir
       size: 309092
       nfiles: 2
     - path: src/common/run_log.py
       hash: md5
-      md5: 7dfdd22ce06d31b656ffd27070142625
-      size: 1358
+      md5: e0cfbf5f1f15f8575da570b2e9585cca
+      size: 1384
     - path: src/drift
       hash: md5
-      md5: 6344665af738be3e0692d363503a0f5d.dir
-      size: 38684
+      md5: 1ea80a43fee5381578611d61928c8f9c.dir
+      size: 39212
       nfiles: 8
     - path: src/features/columns.py
       hash: md5
-      md5: fa5a9e3ae0d13389422b869e7f0e63be
-      size: 502
+      md5: 5480d4a171d5d59d8b104e8244d68757
+      size: 478
     params:
       params.yaml:
         drift:
@@ -348,3 +352,87 @@ stages:
       hash: md5
       md5: 30b6a178e29eb5110b4f3771188f1fa6
       size: 2073
+  lint:
+    cmd: flake8 api frontend src tests scripts 
+      --output-file=reports/lint_report.txt --tee && echo "flake8 passed with 0 
+      warnings" >> reports/lint_report.txt
+    deps:
+    - path: .flake8
+      hash: md5
+      md5: 5b7b6e8db070bd284024f707603cb261
+      size: 128
+    - path: api
+      hash: md5
+      md5: efe6bebaf18acbea0ad30203c257c02a.dir
+      size: 87127
+      nfiles: 19
+    - path: frontend
+      hash: md5
+      md5: dc4f956f3725556fe687b90b09f1045b.dir
+      size: 22315
+      nfiles: 8
+    - path: scripts
+      hash: md5
+      md5: ec92bd1358ac166ef2a8e873ab93fbaa.dir
+      size: 12309
+      nfiles: 6
+    - path: src
+      hash: md5
+      md5: e9d97b5fcaee1fc8ccabfab1e0336342.dir
+      size: 228476
+      nfiles: 61
+    - path: tests
+      hash: md5
+      md5: 00473a664e0e33ba1c640bbc58882cfc.dir
+      size: 406296
+      nfiles: 50
+    outs:
+    - path: reports/lint_report.txt
+      hash: md5
+      md5: bac84d3f6a0dac0748b54b671651483e
+      size: 30
+  test:
+    cmd: pytest -q --junitxml=reports/pytest_results.xml && python 
+      scripts/summarize_tests.py
+    deps:
+    - path: api
+      hash: md5
+      md5: efe6bebaf18acbea0ad30203c257c02a.dir
+      size: 87127
+      nfiles: 19
+    - path: frontend
+      hash: md5
+      md5: dc4f956f3725556fe687b90b09f1045b.dir
+      size: 22315
+      nfiles: 8
+    - path: pytest.ini
+      hash: md5
+      md5: e0696ad1dc7a2aa8f51b13c33f4dde63
+      size: 42
+    - path: reports/lint_report.txt
+      hash: md5
+      md5: bac84d3f6a0dac0748b54b671651483e
+      size: 30
+    - path: src
+      hash: md5
+      md5: e9d97b5fcaee1fc8ccabfab1e0336342.dir
+      size: 228476
+      nfiles: 61
+    - path: tests
+      hash: md5
+      md5: 00473a664e0e33ba1c640bbc58882cfc.dir
+      size: 406296
+      nfiles: 50
+    outs:
+    - path: reports/pytest_results.xml
+      hash: md5
+      md5: 63b3de5c142a171f20e6c6bfb9eb6205
+      size: 13020
+    - path: reports/test_summary.json
+      hash: md5
+      md5: c25482aedcd45e6bc87a646886d4e64e
+      size: 2199
+    - path: reports/test_summary.md
+      hash: md5
+      md5: 5c2ec8968307bd8a95ead64b8d53ee76
+      size: 886
