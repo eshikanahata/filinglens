@@ -50,7 +50,7 @@ def test_user_agent_rejects_missing_and_placeholder(monkeypatch, tmp_path):
     monkeypatch.setenv("EDGAR_USER_AGENT", "Name your.real.email@your-university.edu")
     with pytest.raises(MissingUserAgentError):
         get_user_agent()
-    monkeypatch.setenv("EDGAR_USER_AGENT", "Eshika Nahata eshika@iitm.ac.in")
+    monkeypatch.setenv("EDGAR_USER_AGENT", "Test User test.user@university.edu")
     assert "@" in get_user_agent()
 
 
